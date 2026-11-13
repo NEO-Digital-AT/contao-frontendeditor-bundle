@@ -1,0 +1,13 @@
+{% extends '@Contao/frontend_preview/toolbar.html.twig' %}
+
+{# The switch of the front end editor, first in the toolbar, for users who may edit in the front end. #}
+{% block widgets %}
+    {% if is_granted('neo_frontend_editor.edit_mode') %}
+        <div class="nfe-switch">
+            <button type="button" class="tl_submit" data-nfe-switch aria-pressed="{{ app.request.cookies.get('contao_frontend_editor') == '1' ? 'true' : 'false' }}">
+                {{- 'toolbar.switch'|trans({}, 'neo_frontend_editor') -}}
+            </button>
+        </div>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}

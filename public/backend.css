@@ -1,0 +1,16 @@
+/* "Frontend Editor" in the head of the back end: the symbol before the label; on small screens the symbol alone, as Contao shows its own entries there. */
+#tmenu .icon-frontend-editor {
+    padding-left: 34px;
+    background: url("icons/frontend-editor.svg") 12px center no-repeat;
+}
+
+html[data-color-scheme="dark"] #tmenu .icon-frontend-editor {
+    background-image: url("icons/frontend-editor--dark.svg");
+}
+
+@media (width < 768px) {
+    #tmenu .icon-frontend-editor {
+        padding-left: 12px;
+        background-position: center;
+    }
+}

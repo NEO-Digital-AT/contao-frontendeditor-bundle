@@ -1,0 +1,14 @@
+{# The editor view (EditorViewListener): the editor's script shows the sidebar and loads the page into a frame next to it. Contao adds its preview bar before </body>. #}
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <script type="application/json" id="nfe-config">{{ config|raw }}</script>
+    <script src="{{ script }}" defer></script>
+</body>
+</html>

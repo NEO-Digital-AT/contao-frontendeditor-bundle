@@ -1,0 +1,3 @@
+neo_frontend_editor:
+    resource: ../src/Controller/
+    type: attribute

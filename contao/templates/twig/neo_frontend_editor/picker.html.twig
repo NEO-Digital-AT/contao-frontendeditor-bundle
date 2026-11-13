@@ -1,0 +1,47 @@
+{# be_main.html.twig from Contao 5.7 on, the legacy be_main.html5 (same blocks) before. #}
+{% extends ['@Contao/be_main.html.twig', '@Contao/be_main.html5'] %}
+
+{# Contao's picker, opened in its own modal window; the chosen value goes to the editor on the website. #}
+
+{% block header %}{% endblock %}
+
+{% block container %}
+    <style>
+        html, body { background: transparent !important; }
+    </style>
+    <script>
+        window.addEventListener('load', function () {
+            const origin = {{ target_origin|json_encode|raw }};
+            let done = false;
+
+            function send(type, value) {
+                if (done) {
+                    return;
+                }
+
+                done = true;
+                window.parent.postMessage({ type: type, value: value || '' }, origin);
+            }
+
+            function closed() {
+                window.setTimeout(function () { send('nfe:closed'); }, 0);
+            }
+
+            // Contao 5.7 and later tell when the modal window closes; before that SimpleModal fires sm_hide (MooTools).
+            document.addEventListener('contao--simple-modal:hide', closed);
+
+            if (window.addEvent) {
+                window.addEvent('sm_hide', closed);
+            }
+
+            Backend.openModalSelector({
+                id: 'tl_listing',
+                title: {{ picker_title|json_encode|raw }},
+                url: {{ picker_url|json_encode|raw }},
+                callback: function (table, value) {
+                    send('nfe:picked', value.join(','));
+                }
+            });
+        });
+    </script>
+{% endblock %}

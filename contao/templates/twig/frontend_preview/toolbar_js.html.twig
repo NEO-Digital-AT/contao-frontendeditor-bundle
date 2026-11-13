@@ -1,0 +1,51 @@
+{% extends '@Contao/frontend_preview/toolbar_js.html.twig' %}
+
+{% block style %}
+    {{ parent() }}
+    <style{{ attrs().set('data-nfe-toolbar').setIfExists('nonce', csp_handler.getNonce('style-src')) }}>
+        :host .nfe-switch .tl_submit[aria-pressed="true"] {
+            background: #222;
+            border-color: #222;
+            color: #fff;
+        }
+    </style>
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+    <script{{ attrs().setIfExists('nonce', csp_handler.getNonce('script-src')) }}>
+        (function () {
+            const host = document.querySelector('cto-toolbar');
+
+            if (!host || !host.shadowRoot) {
+                return;
+            }
+
+            // The style of the switch belongs into the closed area of the toolbar.
+            const style = document.querySelector('style[data-nfe-toolbar]');
+
+            if (style) {
+                host.shadowRoot.appendChild(style);
+            }
+
+            // One listener on the toolbar instead of one on the button: Contao loads
+            // the content of the toolbar with a request of its own and announces it
+            // with "cto-toolbar-loaded". When the page arrives in parts, that request
+            // can be answered before this script runs; a listener added on that
+            // event then never came, and the switch did nothing.
+            host.shadowRoot.addEventListener('click', function (event) {
+                const button = event.target instanceof Element ? event.target.closest('[data-nfe-switch]') : null;
+
+                if (!button) {
+                    return;
+                }
+
+                const on = 'true' !== button.getAttribute('aria-pressed');
+                const secure = 'https:' === location.protocol ? '; Secure' : '';
+
+                document.cookie = '{{ constant('Neo\\FrontendEditorBundle\\EditMode::COOKIE') }}=' + (on ? '1' : '') + '; Path=/; SameSite=Lax' + secure + (on ? '' : '; Max-Age=0');
+                location.reload();
+            });
+        })();
+    </script>
+{% endblock %}

@@ -1,0 +1,34 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Neo\FrontendEditorBundle\:
+        resource: ../src/
+        exclude:
+            - ../src/ContaoManager/
+            - ../src/NeoFrontendEditorBundle.php
+            - ../src/Content/ElementData.php
+
+    Neo\FrontendEditorBundle\Controller\:
+        resource: ../src/Controller/
+        public: true
+        tags: [controller.service_arguments]
+
+    # DCA callbacks are resolved from the container.
+    Neo\FrontendEditorBundle\Security\PermissionOptions:
+        public: true
+
+    Neo\FrontendEditorBundle\Backend\SettingsCallbacks:
+        public: true
+
+    Neo\FrontendEditorBundle\Backend\TranslationList:
+        public: true
+
+    Neo\FrontendEditorBundle\Style\StyleCallbacks:
+        public: true
+
+    # Contao's ClipboardManager exists from Contao 5.5 on; before that the clipboard is a session key.
+    Neo\FrontendEditorBundle\Content\PageTreeClipboard:
+        arguments:
+            $manager: '@?contao.data_container.clipboard_manager'
