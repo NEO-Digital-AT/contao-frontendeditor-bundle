@@ -38,7 +38,13 @@ gespeicherten Text ausgibt, bleibt sie, wie sie ist. Sonst (das Template oder ei
 Insert-Tag verändert den Wert, Skripte der Website bewegen das Element, **Alle
 Felder**, ein neues Bild) lädt die Seite im Rahmen neu, an derselben Stelle, mit
 demselben gewählten Element und der Seitenleiste wie vorher: Sie sieht dann genau
-so aus wie nach neuem Öffnen.
+so aus wie nach neuem Öffnen. Solange sie lädt, ist sie abgedunkelt, mit dem
+Hinweis **Die Seite wird aktualisiert …**.
+
+Was im Hintergrund läuft, zeigt das an: Der Knopf, den Sie angeklickt haben,
+zeigt statt seines Symbols einen Ladekreis, bis die Antwort da ist; eine Aktion
+aus einem Menü zeigt es am Knopf des Menüs oder in einem Hinweis am unteren Rand
+(**Wird ausgeführt …**).
 
 **Einen Text verlassen:** Esc drücken. Die Änderung wartet, bis Sie
 speichern; ein zweites Esc hebt die Auswahl des Elements auf. **Abbrechen**
@@ -229,14 +235,17 @@ Formular:
 
 1. Im Reiter des Elements **Alle Felder** wählen (der Eintrag mit Contaos
    Symbol für Einstellungen).
-2. Contaos Formular öffnet sich in der Seitenleiste, neben der Seite.
+2. Contaos Formular öffnet sich in der Seitenleiste, neben der Seite (bis es da
+   ist, steht dort **Wird geladen …**).
 3. Die Felder ändern und im Formular auf **Speichern** (oder **Speichern und
    schließen**) klicken.
 
 ![Contaos Formular eines Textelements in der Seitenleiste, neben der Seite, darüber „Übersetzungsfenster öffnen“ (Plus).](bilder/all-fields.png)
 
-**Ergebnis:** Das Element wird auf der Seite aktualisiert. **Zurück zur
-Struktur** (Pfeil im Kopf der Seitenleiste) schließt das Formular.
+**Ergebnis:** Gleich nach **Speichern** lädt die Seite neben dem Formular neu
+und zeigt die Änderung, das Formular bleibt offen. Solange sie lädt, ist die
+Seite abgedunkelt, mit dem Hinweis **Die Seite wird aktualisiert …**. **Zurück
+zur Struktur** (Pfeil im Kopf der Seitenleiste) schließt das Formular.
 
 Das Formular hat jedes Feld, das Sie ändern dürfen, die Versionen des Elements
 und jeden Elementtyp, auch die anderer Erweiterungen.

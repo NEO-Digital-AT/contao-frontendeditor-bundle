@@ -4,6 +4,14 @@ All notable changes to this extension are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-11-18
+
+### Fixed
+- Every action that runs in the background shows that it runs: the button keeps its spinner also when the window or the sidebar is drawn again meanwhile (translation window, languages, Save after Ctrl+S); work started from a menu entry shows it at the menu's button or, without one, in a note at the bottom edge; the page in the preview is dimmed with **Updating the page …** while it loads again after a change; views, windows and Contao's forms in the sidebar show **Loading …** with a spinner until their content is there.
+- Translation window: while it works, a veil with a spinner lies over its fields and says what runs (**Translating …**, **Loading …**, **Saving …**); for one field only over that field. Nothing in the window can be typed or chosen meanwhile; it closes without asking.
+- **Translate whole page** and **Apply all proposals**: a veil over the comparison says how far they are (element n of m), the card being worked on is marked, nothing can be used until they are done. The writing aid lies under a veil (**Writing proposals …**) while the AI writes.
+- After **Save** in Contao's form in the sidebar (**All fields**, properties, settings), the page in the preview loads again at once, without fetching the structure first.
+
 ## [1.0.0] - 2026-11-13
 
 Initial release. Runs on Contao 5.3 to 6.0 with PHP 8.2 to 8.5, as far as the Contao version supports it (Contao 5.7 needs PHP 8.3, Contao 6.0 PHP 8.4).

@@ -101,6 +101,13 @@ Every text can be changed directly. With a translation service:
 - **Translate this field** (the button next to a text): a proposal for this
   text only.
 
+Until the proposals are there, a veil with a spinner and **Translating …** lies
+over the texts of the window (with **Translate this field** over that text
+only), the button shows a spinner, and nothing in the window can be typed or
+chosen. The same applies while the window loads (**Loading …**) or saves
+(**Saving …**); **Cancel** and the close button stay usable and close the
+window without asking.
+
 Proposals are marked "Proposal (service) – please check". **Save** saves what
 changed into the language on the right and updates the states:
 
@@ -142,6 +149,11 @@ that the permission is missing. If none of the elements gets a proposal, a note
 says so: the texts that still need a translation cannot be translated by
 machine (for example CSS or JavaScript code), or you cannot change them here;
 **Open translation window** shows the reason at each text.
+
+While it runs, a veil with a spinner lies over the comparison and says how far
+it is (**Translating element 2 of 5 …**, also in the bar), the card being
+translated is marked, and the cards and buttons are locked until it is done.
+The proposals of each element appear in its card.
 
 Nothing is saved yet. Each element shows how many proposals it has:
 **Apply and save** saves them as they are, **Check** opens them in the window,

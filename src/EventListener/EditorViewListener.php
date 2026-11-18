@@ -58,7 +58,7 @@ final class EditorViewListener
         'page_withdraw_confirm', 'page_withdraw_confirm_children', 'page_delete_confirm', 'page_withdrawn', 'page_published',
         'post_kind', 'archive_news', 'archive_events', 'archive_faq', 'archive_other', 'on_page', 'order_hint', 'search',
         'search_posts', 'new_news', 'new_events', 'new_faq', 'new_other', 'open_on_page', 'properties', 'properties_of', 'form_no_module', 'session_expired', 'reload',
-        'post_delete_confirm', 'post_withdraw_confirm', 'no_entries', 'no_post_types', 'loading', 'post', 'post_content',
+        'post_delete_confirm', 'post_withdraw_confirm', 'no_entries', 'no_post_types', 'loading', 'busy_working', 'busy_page', 'tr_translating', 'tr_page_progress', 'apply_progress', 'busy_saving', 'aid_busy', 'post', 'post_content',
         'modules_intro', 'modules_own', 'open', 'back_to_modules', 'no_modules', 'plus_pages', 'plus_posts', 'plus_modules',
         // Checks and screen sizes (Pro)
         'view_check', 'check', 'check_seo', 'check_a11y', 'check_again', 'checking', 'check_failed', 'pro', 'pro_intro',

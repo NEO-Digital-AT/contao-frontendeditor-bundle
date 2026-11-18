@@ -304,11 +304,65 @@
         'aria-pressed': options.pressed,
         'aria-keyshortcuts': options.shortcuts,
         'data-action': options.action,
+        'aria-busy': options.action && running.has(options.action) ? 'true' : null,
         disabled: options.disabled,
         onclick: options.onclick,
     }, [options.glyph ? glyph(options.glyph) : (options.icon ? icon(options.icon) : null), options.iconOnly ? null : h('span', { text: label })]);
 
     const glyph = (text, className) => h('span', { class: 'nfe-glyph ' + (className || ''), 'aria-hidden': 'true', text });
+
+    // "Loading …" with a spinner, where a view or a window waits for its content.
+    const loadingNote = (className = '') => h('p', { class: (className ? className + ' ' : '') + 'nfe-loading', role: 'status' }, [h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text: t('loading') })]);
+
+    // A veil with a spinner and what runs, over the area that waits for it (the fields of the translation window, one
+    // field, the comparison of the languages, the writing aid). Visual only: a status line says the same to screen
+    // readers.
+    const busyCover = (text, small = false) => h('div', { class: 'nfe-busy-cover' + (small ? ' nfe-busy-cover--small' : ''), 'aria-hidden': 'true' }, [
+        h('div', { class: 'nfe-busy-cover__note' }, [h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text })]),
+    ]);
+
+    // The scrolling area gets the veil over the part in view; it does not scroll while the work runs. $focus: a part
+    // of it that is brought into view first (the card being translated).
+    function coverArea(area, text, focus = null) {
+        area.classList.add('nfe-busy-area');
+        area.append(busyCover(text));
+
+        // After drawing: the veil where the area is scrolled to, as high as it is shown.
+        window.requestAnimationFrame(() => {
+            if (!area.isConnected) {
+                return;
+            }
+
+            focus?.scrollIntoView({ block: 'center' });
+
+            const cover = area.querySelector(':scope > .nfe-busy-cover');
+
+            if (cover) {
+                cover.style.top = area.scrollTop + 'px';
+                cover.style.height = area.clientHeight + 'px';
+            }
+        });
+    }
+
+    // A back-end page in the sidebar (Contao's form, a module): "Loading …" over it until it is there, and again
+    // when it is loaded anew (waitForm).
+    const framed = (iframe) => {
+        const wait = loadingNote('nfe-panel__wait');
+
+        iframe.addEventListener('load', () => {
+            wait.hidden = true;
+        });
+
+        return h('div', { class: 'nfe-panel__frame' }, [iframe, wait]);
+    };
+
+    const waitForm = (iframe) => {
+        const wait = iframe.parentElement?.querySelector('.nfe-panel__wait');
+
+        if (wait) {
+            wait.hidden = false;
+        }
+    };
 
     // A button drawn while its work still runs (the panel was drawn again): busy from the start.
     const busyWhile = (node, busy) => {
@@ -328,16 +382,56 @@
 
     // The button whose click started a request shows it at once: spinner and aria-busy until the answer is there
     // (requests that start up to 1.5 s after the click, e.g. after a question, count as started by it).
-    let lastClick = { node: null, at: 0 };
+    let lastClick = { node: null, action: null, at: 0 };
 
     const recordClick = (event) => {
         // Elements of the page's frame belong to its window: no instanceof check.
         const node = event.composedPath().find((entry) => entry.nodeType === 1 && entry.matches('button, .nfe-button'));
 
         if (node) {
-            lastClick = { node, at: performance.now() };
+            lastClick = { node, action: node.dataset.action || null, at: performance.now() };
         }
     };
+
+    // Actions (data-action) whose work still runs: a button drawn again meanwhile (the window or the sidebar shows the
+    // new state) is busy from the start, and the one drawn before the request started is found by its action.
+    const running = new Map();
+
+    const actionNodes = (action) => [root, pageRoot].filter(Boolean).flatMap((area) => [...area.querySelectorAll('[data-action="' + CSS.escape(action) + '"]')]);
+
+    function holdAction(action, step) {
+        const count = (running.get(action) || 0) + step;
+
+        if (count > 0) {
+            running.set(action, count);
+        } else {
+            running.delete(action);
+        }
+
+        // Buttons marked only because their action runs (not counted by setBusy) follow the registry.
+        for (const node of actionNodes(action)) {
+            if (node.dataset.nfeBusy) {
+                continue;
+            }
+
+            if (count > 0) {
+                node.setAttribute('aria-busy', 'true');
+            } else {
+                node.removeAttribute('aria-busy');
+            }
+        }
+    }
+
+    // Work of several requests (a whole page, all proposals): its button stays busy from the first to the last one.
+    async function whileAction(action, work) {
+        holdAction(action, 1);
+
+        try {
+            return await work();
+        } finally {
+            holdAction(action, -1);
+        }
+    }
 
     function setBusy(node, step) {
         if (!node) {
@@ -351,19 +445,76 @@
             node.setAttribute('aria-busy', 'true');
         } else {
             delete node.dataset.nfeBusy;
-            node.removeAttribute('aria-busy');
+
+            if (!running.has(node.dataset.action)) {
+                node.removeAttribute('aria-busy');
+            }
+        }
+    }
+
+    // Requests started by a click whose button is gone (an entry of a menu that closed) show a note instead.
+    let unmarked = 0;
+    let unmarkedTimer = 0;
+
+    function showWorking(step) {
+        unmarked += step;
+        window.clearTimeout(unmarkedTimer);
+
+        // Short requests need no note: it appears after a moment and goes with the last of them.
+        if (unmarked > 0) {
+            unmarkedTimer = window.setTimeout(() => {
+                working.replaceChildren(h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text: t('busy_working') }));
+                working.hidden = false;
+            }, 300);
+        } else {
+            working.hidden = true;
+            working.replaceChildren();
+        }
+    }
+
+    // The veil over the page while it loads again; it goes once the editor is attached to the new page (at most 20 s).
+    let veilTimer = 0;
+
+    function showVeil(shown) {
+        window.clearTimeout(veilTimer);
+        veil.hidden = !shown;
+        veil.firstElementChild.replaceChildren(...(shown ? [h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text: t('busy_page') })] : []));
+        pageFrame.toggleAttribute('aria-busy', shown);
+
+        if (shown) {
+            pageFrame.setAttribute('aria-busy', 'true');
+            veilTimer = window.setTimeout(() => showVeil(false), 20000);
         }
     }
 
     async function api(path, options = {}) {
-        const trigger = lastClick.node?.isConnected && performance.now() - lastClick.at < 1500 ? lastClick.node : null;
+        const recent = performance.now() - lastClick.at < 1500;
+        const action = recent ? lastClick.action : null;
+        const trigger = recent ? (lastClick.node?.isConnected ? lastClick.node : (action ? actionNodes(action)[0] || null : null)) : null;
+        const note = recent && !trigger;
 
         setBusy(trigger, 1);
+
+        if (action) {
+            holdAction(action, 1);
+        }
+
+        if (note) {
+            showWorking(1);
+        }
 
         try {
             return await request(path, options);
         } finally {
             setBusy(trigger, -1);
+
+            if (action) {
+                holdAction(action, -1);
+            }
+
+            if (note) {
+                showWorking(-1);
+            }
         }
     }
 
@@ -674,7 +825,9 @@
     // collapsed sidebar, the handle for the sidebar's width, messages.
     const pageFrame = h('iframe', { class: 'nfe-page', title: document.title });
     const screenBar = h('div', { class: 'nfe-screen__bar', role: 'toolbar', 'aria-label': t('screen_size'), hidden: true });
-    const stageArea = h('div', { class: 'nfe-stage__area' }, [pageFrame]);
+    // While the page loads again after a change, a veil over the old one says so (reloadPage until attach).
+    const veil = h('div', { class: 'nfe-veil', hidden: true }, [h('div', { class: 'nfe-veil__note', role: 'status' })]);
+    const stageArea = h('div', { class: 'nfe-stage__area' }, [pageFrame, veil]);
     const stage = h('div', { class: 'nfe-stage' }, [screenBar, stageArea]);
     const live = h('div', { class: 'nfe-live', role: 'status', 'aria-live': 'polite' });
     const panel = h('aside', { class: 'nfe-panel' });
@@ -682,6 +835,8 @@
     // The strip at the right edge (wide screens): open and close the sidebar, beside or over the page.
     const rail = h('div', { class: 'nfe-rail', role: 'toolbar', 'aria-orientation': 'vertical' });
     const toast = h('div', { class: 'nfe-toast', role: 'alert', hidden: true });
+    // Work started from an entry of a menu that closed: a note at the bottom edge while it runs (showWorking).
+    const working = h('div', { class: 'nfe-working', role: 'status', hidden: true });
     const view = h('div', { class: 'nfe-view' }, [stage, panel, floating, rail]);
     // The width of the sidebar can be changed (drag or arrow keys); the browser keeps it per kind of view.
     const resizer = h('div', { class: 'nfe-resize', role: 'separator', 'aria-orientation': 'vertical', tabindex: '0', hidden: true }, [h('span', { class: 'nfe-resize__grip', 'aria-hidden': 'true' })]);
@@ -689,7 +844,7 @@
     // The grip on the edge: six dots, like the grip of the TinyMCE bar.
     resizer.firstElementChild.innerHTML = '<svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor"><circle cx="2" cy="2" r="1.3"/><circle cx="6" cy="2" r="1.3"/><circle cx="2" cy="7" r="1.3"/><circle cx="6" cy="7" r="1.3"/><circle cx="2" cy="12" r="1.3"/><circle cx="6" cy="12" r="1.3"/></svg>';
 
-    root.append(view, resizer, toast, live);
+    root.append(view, resizer, toast, working, live);
     document.documentElement.style.overflow = 'hidden';
     document.body.style.margin = '0';
     document.body.append(host);
@@ -4130,6 +4285,9 @@
             return;
         }
 
+        // The Save buttons show that it runs, also after Ctrl+S (no click) and while the page loads again.
+        holdAction('save', 1);
+
         try {
             const refresh = { elements: new Set(), items: new Set() };
 
@@ -4172,6 +4330,8 @@
             state.error = true;
             renderStatus();
             showToast(error.status ? error.message : t('save_failed'), error.status ? null : save);
+        } finally {
+            holdAction('save', -1);
         }
     }
 
@@ -4490,6 +4650,7 @@
         state.restore = { ...restore, scroll: pageWin?.scrollY || 0 };
         // The editor's own reload: waiting changes are kept in the editor, the browser need not ask.
         state.reloading = true;
+        showVeil(true);
         pageWin?.location.replace(frameUrl(pageWin.location.href));
     }
 
@@ -4501,6 +4662,12 @@
         state.busy = true;
         closeMenu(false);
 
+        // The page changes and loads again afterwards: the veil over it shows that from the start (also after a
+        // drag or a key, which have no button).
+        if (restore) {
+            showVeil(true);
+        }
+
         try {
             const result = await api(path, { method: 'POST', body: JSON.stringify(body || {}) });
 
@@ -4510,6 +4677,7 @@
 
             return result;
         } catch (error) {
+            showVeil(false);
             showToast(error.status ? error.message : t('save_failed'));
 
             return null;
@@ -4682,9 +4850,14 @@
                 tabindex: '-1',
                 onclick: () => {
                     if (!item.disabled) {
+                        const owner = state.menu?.anchor;
+
                         // From the tab of a part the focus goes back to the tab first: a window the entry opens returns it
                         // there when it closes.
-                        closeMenu(state.menu?.anchor === label);
+                        closeMenu(owner === label);
+                        // Work the entry starts shows at the button the menu belongs to; without one (the tab, a right
+                        // click) a note at the bottom edge says that it runs.
+                        lastClick = { node: owner?.matches?.('.nfe-button') ? owner : null, action: owner?.dataset?.action || null, at: performance.now() };
                         item.action();
                     }
                 },
@@ -5139,7 +5312,8 @@
     async function closeTranslation(force = false) {
         const tr = state.translation;
 
-        if (!tr || (!force && !(await settleTranslation()))) {
+        // While the window works, it closes without asking: a proposal is dropped, a save that runs finishes.
+        if (!tr || (!force && !tr.busy && !(await settleTranslation()))) {
             return false;
         }
 
@@ -5226,7 +5400,9 @@
         }
 
         tr.busy = true;
-        tr.message = t('loading');
+        // The fields that get a proposal show it (and cannot be written in) until it is there.
+        tr.pending = addresses ? new Set(addresses) : null;
+        tr.message = t('tr_translating');
         renderTranslation();
 
         try {
@@ -5243,6 +5419,7 @@
         }
 
         tr.busy = false;
+        tr.pending = undefined;
         renderTranslation();
     }
 
@@ -5265,7 +5442,7 @@
         }
 
         tr.busy = true;
-        tr.message = '';
+        tr.message = t('busy_saving');
         renderTranslation();
 
         let result = null;
@@ -5463,7 +5640,7 @@
         box.append(h('div', { class: 'nfe-tr__head' }, [h('h2', { class: 'nfe-dialog__title', id: titleId, text: t('tr_title', { element: subject }) }), close]));
 
         if (!data) {
-            box.append(h('p', { class: 'nfe-tr__empty', text: t('loading') }));
+            box.append(loadingNote('nfe-tr__empty'));
             tr.overlay.replaceChildren(box);
             trapTranslation(box, focusKey);
 
@@ -5547,7 +5724,9 @@
             body.append(translationRow(unit, index++, data));
         }
 
-        const status = h('div', { class: 'nfe-tr__status', role: 'status', tabindex: '-1' }, tr.message ? [h('span', { text: tr.message })] : []);
+        // While something runs, the line says what (with a spinner); afterwards the result.
+        const message = tr.busy ? tr.message || t('loading') : tr.message;
+        const status = h('div', { class: 'nfe-tr__status' + (tr.busy ? ' nfe-loading' : ''), role: 'status', tabindex: '-1' }, message ? [tr.busy ? h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }) : null, h('span', { text: message })] : []);
         // Nothing can be saved without the element in the version or the permission; the notice above says why.
         const save = target.id && target.canUpdate ? button(t('save'), { icon: 'save', className: machine && !translationDirty() ? '' : 'nfe-button--primary', action: 'tr-save', onclick: saveTranslation }) : null;
 
@@ -5561,7 +5740,63 @@
             box.style.setProperty('--nfe-tr-line', line.offsetHeight + 'px');
         }
 
+        if (tr.busy) {
+            lockTranslation(box, tr.pending);
+
+            // One or a few fields: the veil over them; everything else (all fields, loading, saving): over all of them.
+            if (!(tr.pending instanceof Set)) {
+                coverArea(body, message);
+            }
+        }
+
         trapTranslation(box, focusKey);
+    }
+
+    // While the window works (proposals, saving, loading): nothing can be typed or chosen, only closing; the fields
+    // that wait for a proposal ($pending: their addresses, null: all of them) carry a spinner over them.
+    function lockTranslation(box, pending) {
+        for (const control of box.querySelectorAll('.nfe-tr__target [data-address]')) {
+            if (control.isContentEditable) {
+                control.setAttribute('contenteditable', 'false');
+                control.setAttribute('aria-readonly', 'true');
+            } else {
+                control.readOnly = true;
+            }
+
+            if (pending instanceof Set && pending.has(control.dataset.address)) {
+                const cell = control.closest('.nfe-tr__target');
+
+                cell.classList.add('nfe-tr__target--busy');
+                cell.setAttribute('aria-busy', 'true');
+                cell.append(busyCover(t('tr_translating'), true));
+            }
+        }
+
+        lockButtons(box, ['tr-close', 'tr-cancel']);
+    }
+
+    // Work runs: the selects of $box are locked, its other buttons keep the focus (aria-disabled, not disabled) but
+    // do nothing; $keep: actions that stay usable.
+    function lockButtons(box, keep = []) {
+        for (const select of box.querySelectorAll('select')) {
+            select.disabled = true;
+        }
+
+        for (const node of box.querySelectorAll('.nfe-button')) {
+            if (!keep.includes(node.dataset.action) && node.getAttribute('aria-busy') !== 'true') {
+                node.setAttribute('aria-disabled', 'true');
+            }
+        }
+
+        box.addEventListener('click', blockLocked, true);
+    }
+
+    // A locked button, or one whose work still runs: its click ends here (no second request).
+    function blockLocked(event) {
+        if (event.target.closest?.('.nfe-button[aria-disabled="true"], .nfe-button[aria-busy="true"]')) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }
 
     // One text: its name, its text in the language translated from, in the one translated into (editable unless
@@ -5852,6 +6087,8 @@
         const lang = state.lang;
         const data = lang?.data;
         const ed = editions();
+        // Drawn again while work runs (one step of the whole page): the focus stays on the same button.
+        const focusAction = panel.contains(root.activeElement) ? root.activeElement?.dataset.action : null;
         const versions = ed.languages || [];
         const main = versions.find((version) => version.main);
         const title = t('languages_of', { page: data?.main.title || main?.title || '' });
@@ -5885,13 +6122,12 @@
 
         const rows = data ? data.articles.flatMap((group) => group.rows) : [];
         const counts = { outdated: rows.filter((row) => row.status === 'outdated').length, missing: rows.filter((row) => row.status === 'missing').length };
-        const applyAll = lang?.proposals.size ? button(t('apply_all'), { icon: 'save', className: 'nfe-button--primary', onclick: applyAllProposals }) : null;
+        const applyAll = lang?.proposals.size ? button(t('apply_all'), { icon: 'save', className: 'nfe-button--primary', action: 'lang-apply-all', onclick: applyAllProposals }) : null;
         // The main action of the view while translations are behind and no proposals wait for "apply".
-        const translateButton = ed.translate ? button(t('translate_page'), { icon: 'translate', className: counts.outdated && !applyAll ? 'nfe-button--primary' : '', onclick: translatePage }) : null;
+        const translateButton = ed.translate ? button(t('translate_page'), { icon: 'translate', className: counts.outdated && !applyAll ? 'nfe-button--primary' : '', action: 'lang-translate-page', onclick: translatePage }) : null;
 
-        if (translateButton && (lang?.busy || !data)) {
+        if (translateButton && !data && !lang?.busy) {
             translateButton.disabled = true;
-            translateButton.setAttribute('aria-busy', lang?.busy ? 'true' : 'false');
         }
 
         // The buttons in one row of their own (fitRow): what does not fit is behind "…"; "Apply all" stays.
@@ -5906,7 +6142,11 @@
         const actionRow = actions.length ? h('div', { class: 'nfe-lang-bar__actions', 'data-fit': '' }, actions) : null;
         const bar = h('div', { class: 'nfe-lang-bar' }, [
             h('span', { class: 'nfe-lang-bar__pair' }, [t('main_language', { language: main?.name || '' }), h('span', { 'aria-hidden': 'true', text: '→' }), select]),
-            data ? h('span', { class: 'nfe-lang-bar__summary', text: t('summary', { outdated: counts.outdated, missing: counts.missing }) }) : null,
+            // While the whole page is translated or all proposals are saved: how far it is.
+            lang?.progress ? h('span', { class: 'nfe-lang-bar__summary nfe-loading', role: 'status' }, [
+                h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }),
+                h('span', { text: t(lang.progress.kind === 'apply' ? 'apply_progress' : 'tr_page_progress', { n: Math.min(lang.progress.done + 1, lang.progress.total), total: lang.progress.total }) }),
+            ]) : (data ? h('span', { class: 'nfe-lang-bar__summary', text: t('summary', { outdated: counts.outdated, missing: counts.missing }) }) : null),
             actionRow,
         ]);
 
@@ -5914,7 +6154,15 @@
             fitRow(actionRow);
         }
 
-        const body = h('div', { class: 'nfe-panel__body nfe-cmp' });
+        const body = h('div', { class: 'nfe-panel__body nfe-cmp' + (lang?.busy ? ' nfe-cmp--busy' : '') });
+
+        // The comparison is being loaded (another language, after a change).
+        if (!data) {
+            body.append(loadingNote('nfe-cmp__loading'));
+        }
+
+        // Nothing in the cards can be used or written in while the work runs.
+        body.inert = Boolean(lang?.busy);
 
         for (const group of data?.articles || []) {
             const post = group.kind === 'post';
@@ -5943,6 +6191,19 @@
         panel.replaceChildren(head, bar, body, h('div', { class: 'nfe-panel__foot' }, [h('div', { 'data-status': '' })]));
         panel.setAttribute('aria-label', title);
         renderStatus();
+
+        if (lang?.busy) {
+            lockButtons(head);
+            lockButtons(bar);
+
+            if (lang.progress) {
+                coverArea(body, t(lang.progress.kind === 'apply' ? 'apply_progress' : 'tr_page_progress', { n: Math.min(lang.progress.done + 1, lang.progress.total), total: lang.progress.total }), body.querySelector('.nfe-card--busy'));
+            }
+        }
+
+        if (focusAction) {
+            panel.querySelector('[data-action="' + CSS.escape(focusAction) + '"]')?.focus();
+        }
     }
 
     const chip = (status) => h('span', { class: 'nfe-chip nfe-chip--' + status, text: t('status_' + status) });
@@ -5976,7 +6237,8 @@
         const element = row.target;
         const proposal = lang.proposals.get(element.id);
         const count = proposal ? Object.keys(proposal.values).length : 0;
-        const card = h('div', { class: 'nfe-card' + (proposal ? ' nfe-card--proposal' : '') }, [
+        const working = lang.progress?.current === element.id;
+        const card = h('div', { class: 'nfe-card' + (proposal ? ' nfe-card--proposal' : '') + (working ? ' nfe-card--busy' : ''), 'aria-busy': working ? 'true' : null }, [
             h('div', { class: 'nfe-card__head' }, [h('span', { class: 'nfe-card__type', text: element.typeLabel }), chip(row.status)]),
             proposal ? h('p', { class: 'nfe-proposal-note' }, [icon('translate'), h('span', { text: t('tr_proposals', { n: count, service: serviceName() }) })]) : null,
         ]);
@@ -6162,28 +6424,38 @@
             return;
         }
 
-        lang.busy = true;
-        renderLanguages();
-
         let made = 0;
         let failed = false;
 
-        for (const row of rows) {
-            try {
-                const result = await api('/translation/' + row.main.id + '/propose', { method: 'POST', body: JSON.stringify({ page: lang.target, open: row.status !== 'outdated' }) });
+        // One element after the other: the bar says how far it is, the card being translated shows it, its
+        // proposals appear as soon as they are there; nothing else can be used meanwhile.
+        lang.busy = true;
+        lang.progress = { kind: 'translate', done: 0, total: rows.length, current: null };
 
-                if (Object.keys(result.values || {}).length) {
-                    lang.proposals.set(row.target.id, { main: row.main.id, values: result.values });
-                    made++;
+        await whileAction('lang-translate-page', async () => {
+            for (const row of rows) {
+                lang.progress.current = row.target.id;
+                renderLanguages();
+
+                try {
+                    const result = await api('/translation/' + row.main.id + '/propose', { method: 'POST', body: JSON.stringify({ page: lang.target, open: row.status !== 'outdated' }) });
+
+                    if (Object.keys(result.values || {}).length) {
+                        lang.proposals.set(row.target.id, { main: row.main.id, values: result.values });
+                        made++;
+                    }
+                } catch (error) {
+                    showToast(error.status ? error.message : t('save_failed'));
+                    failed = true;
+                    break;
                 }
-            } catch (error) {
-                showToast(error.status ? error.message : t('save_failed'));
-                failed = true;
-                break;
+
+                lang.progress.done++;
             }
-        }
+        });
 
         lang.busy = false;
+        lang.progress = null;
         renderLanguages();
 
         // The proposals show in the cards. None at all (the server leaves out texts that are code other than HTML or
@@ -6207,11 +6479,28 @@
     }
 
     async function applyAllProposals() {
-        for (const id of [...state.lang.proposals.keys()]) {
-            if (!(await saveRow(id))) {
-                break;
+        const lang = state.lang;
+        const ids = [...lang.proposals.keys()];
+
+        lang.busy = true;
+        lang.progress = { kind: 'apply', done: 0, total: ids.length, current: null };
+
+        await whileAction('lang-apply-all', async () => {
+            for (const id of ids) {
+                lang.progress.current = id;
+                renderLanguages();
+
+                if (!(await saveRow(id))) {
+                    break;
+                }
+
+                lang.progress.done++;
             }
-        }
+        });
+
+        lang.busy = false;
+        lang.progress = null;
+        renderLanguages();
     }
 
     // The window "Translate" for an element just taken over, with proposals right away where a service is set up.
@@ -6347,7 +6636,7 @@
         }
 
         const term = h('input', { type: 'text', class: 'tl_text', id: 'nfe-aid-term', value: aid.term, maxlength: '120', oninput: (event) => { aid.term = event.target.value; } });
-        const create = button(t('create_proposals'), { className: 'nfe-button--primary', onclick: createProposals });
+        const create = button(t('create_proposals'), { className: 'nfe-button--primary', action: 'aid-create', onclick: createProposals });
 
         if (aid.busy || !ed.writingAidReady || ed.writingAidLeft < 1) {
             create.disabled = true;
@@ -6378,6 +6667,12 @@
                     button(t('apply'), { onclick: () => applyProposal(proposal) }),
                 ]);
             })));
+        }
+
+        // While the AI writes: the veil over the writing aid, and the same in a status line for screen readers.
+        if (aid.busy) {
+            body.append(h('p', { class: 'nfe-visually-hidden', role: 'status', text: t('aid_busy') }));
+            coverArea(body, t('aid_busy'));
         }
 
         panel.replaceChildren(head, body, h('div', { class: 'nfe-panel__foot' }, [h('p', { class: 'nfe-aid__foot', text: t('requests_left', { left: ed.writingAidLeft ?? 0, limit: ed.writingAidLimit ?? 0 }) })]));
@@ -7141,7 +7436,7 @@
         const card = h('div', { class: 'nfe-info-card', role: 'dialog', 'aria-label': t('info_of', { name: target.title }), tabindex: '-1' });
         const close = button(t('close'), { icon: 'close', iconOnly: true, onclick: () => closeInfo(true) });
 
-        card.append(h('div', { class: 'nfe-info-card__head' }, [h('h2', { text: target.title }), close]), h('p', { class: 'nfe-info-card__note', text: t('loading') }));
+        card.append(h('div', { class: 'nfe-info-card__head' }, [h('h2', { text: target.title }), close]), loadingNote('nfe-info-card__note'));
         card.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 event.stopPropagation();
@@ -7285,7 +7580,7 @@
         panel.setAttribute('aria-label', title);
 
         if (!data) {
-            body.append(h('p', { text: t('loading') }));
+            body.append(loadingNote());
 
             return;
         }
@@ -7542,7 +7837,7 @@
         renderStatus();
 
         if (!posts.types) {
-            body.append(h('p', { class: 'nfe-posts__context', text: t('loading') }));
+            body.append(loadingNote('nfe-posts__context'));
 
             return;
         }
@@ -7605,7 +7900,7 @@
 
         const items = posts.items || [];
         const head = h('div', { class: 'nfe-posts__head' }, [
-            h('h3', { text: posts.loading ? t('loading') : tn('entries', items.length, { n: items.length }) }),
+            posts.loading ? h('h3', { class: 'nfe-loading' }, [h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text: t('loading') })]) : h('h3', { text: tn('entries', items.length, { n: items.length }) }),
             posts.archive?.canCreate ? button(t('new_' + kind), { icon: 'new', className: 'nfe-button--primary', onclick: newPost }) : null,
         ]);
 
@@ -7772,7 +8067,7 @@
         renderStatus();
 
         if (!state.modules) {
-            body.append(h('p', { class: 'nfe-posts__context', text: t('loading') }));
+            body.append(loadingNote('nfe-posts__context'));
 
             return;
         }
@@ -7824,7 +8119,7 @@
                 h('h2', { class: 'nfe-panel__title', text: module.label }),
                 button(t('close'), { icon: 'close', iconOnly: true, onclick: back }),
             ]),
-            iframe,
+            framed(iframe),
         );
         panel.setAttribute('aria-label', module.label);
         panel.querySelector('.nfe-panel__head button')?.focus();
@@ -8105,7 +8400,7 @@
         const seo = state.check.seo;
 
         if (!seo.loaded) {
-            body.append(h('p', { class: 'nfe-posts__context', text: t('loading') }));
+            body.append(loadingNote('nfe-posts__context'));
 
             return;
         }
@@ -8545,7 +8840,7 @@
     function actionButtons() {
         const disabled = !state.editing && !state.pending.length;
         const cancelButton = button(t('cancel'), { onclick: cancel });
-        const saveButton = button(t('save'), { icon: 'save', onclick: save, className: 'nfe-button--primary' });
+        const saveButton = button(t('save'), { icon: 'save', action: 'save', onclick: save, className: 'nfe-button--primary' });
 
         cancelButton.disabled = disabled;
         saveButton.disabled = disabled;
@@ -9226,12 +9521,18 @@
                 return;
             }
 
-            await loadStructure();
-
+            // Saved: the page loads again at once (the structure comes with it) and shows the change while the form
+            // stays open; a veil over the page says that it is being updated.
             if (!isNew) {
                 await refreshElement(id);
                 renderStructure();
-            } else if (state.form?.id === id) {
+
+                return;
+            }
+
+            await loadStructure();
+
+            if (state.form?.id === id) {
                 state.form.saved = table === 'tl_content' ? Boolean(elementData(id)) : state.structure.articles.some((article) => article.id === id);
             }
         };
@@ -9241,6 +9542,7 @@
         // The record changed elsewhere (translation window): the form shows what is stored now.
         state.form.reload = () => {
             loads = 0;
+            waitForm(iframe);
             iframe.src = iframe.src;
         };
 
@@ -9252,7 +9554,7 @@
             ]),
             hint ? h('p', { class: 'nfe-form-hint', text: hint }) : '',
             actions ? actionRow(actions, 'nfe-form-actions') : '',
-            iframe,
+            framed(iframe),
         );
         panel.setAttribute('aria-label', title);
         panel.querySelector('.nfe-panel__head button')?.focus();
@@ -9265,7 +9567,7 @@
             return;
         }
 
-        await loadStructure();
+        // The structure comes with the page (attach).
         await reloadFrame();
     }
 
@@ -9484,6 +9786,7 @@
         try {
             await loadStructure();
         } catch (error) {
+            showVeil(false);
             showToast(error.message || t('save_failed'));
 
             return;
@@ -9526,6 +9829,10 @@
         if (state.reloadDone) {
             await state.itemsLoaded;
             state.reloadDone?.();
+        }
+
+        if (doc === pageDoc) {
+            showVeil(false);
         }
     }
 

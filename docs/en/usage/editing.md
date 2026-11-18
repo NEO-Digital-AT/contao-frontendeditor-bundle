@@ -38,7 +38,13 @@ text, it stays as it is. Otherwise (the template or an insert tag changes the
 value, the element is animated by the website's scripts, **All fields**, a new
 image) the page in the frame loads again, at the same place, with the same
 element selected and the sidebar as it was: it then looks exactly like after
-opening it anew.
+opening it anew. While it loads, it is dimmed with the note **Updating the
+page …**.
+
+Whatever runs in the background shows that it runs: the button you clicked
+turns its symbol into a spinner until the answer is there; an action started
+from a menu shows it at the menu's button, or in a note at the bottom edge
+(**Working …**).
 
 **Leave a text:** press Esc. Your change waits until you save; a second Esc
 ends the selection of the element. **Cancel** drops every change that waits, and
@@ -215,13 +221,16 @@ class, the image size, the visibility period) is in Contao's own form:
 
 1. Choose **All fields** in the element's tab (the entry with Contao's symbol
    for settings).
-2. Contao's form opens in the sidebar, next to the page.
+2. Contao's form opens in the sidebar, next to the page (**Loading …** until
+   it is there).
 3. Change the fields and click **Save** (or **Save and close**) in the form.
 
 ![Contao's form of a text element in the sidebar, next to the page, with "Open translation window" (Plus) above it.](bilder/all-fields.png)
 
-**Result:** the element is updated on the page. **Back to the structure** (arrow
-in the head of the sidebar) closes the form.
+**Result:** right after **Save**, the page next to the form loads again and
+shows the change, the form stays open. While it loads, the page is dimmed with
+the note **Updating the page …**. **Back to the structure** (arrow in the head
+of the sidebar) closes the form.
 
 The form has every field you may change, the versions of the element, and every
 element type, including those of other extensions.
