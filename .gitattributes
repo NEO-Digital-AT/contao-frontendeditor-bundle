@@ -1,0 +1,11 @@
+# Not part of the installed package (Composer dist archive, git archive)
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/assets export-ignore
+/node_modules export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/tools export-ignore
+/.github export-ignore
+/phpunit.xml.dist export-ignore
+/tests export-ignore

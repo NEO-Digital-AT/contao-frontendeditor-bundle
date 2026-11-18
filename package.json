@@ -1,0 +1,11 @@
+{
+    "name": "neo-contao-frontendeditor-assets",
+    "private": true,
+    "description": "Builds the minified editor script and stylesheet (public/) from assets/.",
+    "scripts": {
+        "build": "esbuild assets/editor.js --bundle --minify --target=es2020 --outfile=public/editor.js && esbuild assets/editor.css --minify --outfile=public/editor.css"
+    },
+    "devDependencies": {
+        "esbuild": "0.24.2"
+    }
+}
