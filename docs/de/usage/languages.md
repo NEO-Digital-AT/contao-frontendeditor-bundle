@@ -104,6 +104,14 @@ Jeder Text lässt sich direkt ändern. Mit einem Übersetzungsdienst:
 - **Dieses Feld übersetzen** (der Knopf neben einem Text): ein Vorschlag nur für
   diesen Text.
 
+Bis die Vorschläge da sind, liegt über den Texten des Fensters eine
+Ladeanzeige mit Ladekreis und **Wird übersetzt …** (bei **Dieses Feld
+übersetzen** nur über diesem Text), der Knopf zeigt einen Ladekreis, und im
+Fenster lässt sich nichts eintippen oder auswählen. Dasselbe gilt, während das
+Fenster lädt (**Wird geladen …**) oder speichert (**Wird gespeichert …**);
+**Abbrechen** und der Knopf zum Schließen bleiben bedienbar und schließen das
+Fenster ohne Rückfrage.
+
 Vorschläge sind gekennzeichnet: „Vorschlag (Dienst) – bitte prüfen“.
 **Speichern** speichert, was sich geändert hat, in die Sprache rechts und
 setzt den Stand:
@@ -152,6 +160,12 @@ Elemente einen Vorschlag, sagt das ein Hinweis: Die Texte, die noch eine
 Übersetzung brauchen, lassen sich nicht maschinell übersetzen (zum Beispiel
 CSS- oder JavaScript-Code), oder Sie können sie hier nicht ändern;
 **Übersetzungsfenster öffnen** zeigt bei jedem Text den Grund.
+
+Solange es läuft, liegt über dem Vergleich eine Ladeanzeige mit Ladekreis, die
+sagt, wie weit es ist (**Element 2 von 5 wird übersetzt …**, auch in der
+Leiste); die Karte, die gerade übersetzt wird, ist markiert, und Karten und
+Knöpfe sind gesperrt, bis es fertig ist. Die Vorschläge jedes Elements
+erscheinen in seiner Karte.
 
 Gespeichert ist noch nichts. Jedes Element zeigt, wie viele Vorschläge es hat:
 **Übernehmen und speichern** speichert sie, wie sie sind, **Prüfen** öffnet sie

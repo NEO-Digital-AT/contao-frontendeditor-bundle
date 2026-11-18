@@ -131,6 +131,169 @@
     }
 }
 
+/* The same spinner on its own: before the text of a line that says what runs ("Loading …", "Translating …"). */
+.nfe-spinner {
+    flex: none;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: nfe-spin .7s linear infinite;
+}
+
+.nfe-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nfe-loading[hidden] {
+    display: none;
+}
+
+/* A button locked while other work runs: it keeps the focus (aria-disabled), but looks and acts disabled. */
+.nfe-button[aria-disabled="true"]:not([aria-busy="true"]) {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+/* The area that waits for work (the fields of the translation window, the comparison of the languages, the writing
+   aid): a veil over the part in view, with a spinner and what runs in the middle; the area does not scroll meanwhile. */
+.nfe-busy-area {
+    position: relative;
+    overflow: hidden !important;
+}
+
+.nfe-busy-cover {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 100%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    background: color-mix(in srgb, var(--nfe-surface) 72%, transparent);
+    cursor: progress;
+}
+
+.nfe-busy-cover__note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+    padding: 14px 18px;
+    background: var(--nfe-surface);
+    border: 1px solid var(--nfe-border);
+    border-left: 4px solid var(--nfe-accent);
+    border-radius: var(--nfe-radius);
+    font-weight: 600;
+}
+
+.nfe-busy-cover__note .nfe-spinner {
+    width: 22px;
+    height: 22px;
+    border-width: 3px;
+    color: var(--nfe-accent);
+}
+
+/* One field of the translation window: the veil over it alone, with a small note. */
+.nfe-tr__target--busy {
+    position: relative;
+}
+
+.nfe-busy-cover--small {
+    inset: 0;
+    height: auto;
+    padding: 0;
+    border-radius: var(--nfe-radius);
+}
+
+.nfe-busy-cover--small .nfe-busy-cover__note {
+    gap: 8px;
+    padding: 4px 10px;
+    border-left-width: 3px;
+    font-weight: normal;
+}
+
+.nfe-busy-cover--small .nfe-busy-cover__note .nfe-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+/* The card being translated stands out under the veil. */
+.nfe-card--busy {
+    outline: 2px solid var(--nfe-accent);
+    outline-offset: 2px;
+}
+
+.nfe-cmp__loading {
+    margin: 16px 0;
+}
+
+/* Over the page while it loads again after a change: the old page dimmed, a note in the middle. It appears after a
+   moment, so a quick reload does not flash. */
+.nfe-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--nfe-surface) 55%, transparent);
+    cursor: progress;
+    animation: nfe-veil-in .15s .2s both;
+}
+
+.nfe-veil[hidden] {
+    display: none;
+}
+
+.nfe-veil__note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--nfe-surface);
+    border: 1px solid var(--nfe-border);
+    border-left: 4px solid var(--nfe-accent);
+    border-radius: var(--nfe-radius);
+}
+
+@keyframes nfe-veil-in {
+    from {
+        opacity: 0;
+    }
+}
+
+/* Work started from a menu entry (the menu closed): a note at the bottom edge while it runs. */
+.nfe-working {
+    position: fixed;
+    left: 50%;
+    bottom: 88px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(560px, calc(100vw - 32px));
+    padding: 12px 16px;
+    background: var(--nfe-surface);
+    border: 1px solid var(--nfe-border);
+    border-left: 4px solid var(--nfe-accent);
+    border-radius: var(--nfe-radius);
+}
+
+.nfe-working[hidden] {
+    display: none;
+}
+
 /* A row of actions on one line: labels shorten (the full label as tooltip), icon buttons keep their size. */
 .nfe-actions {
     display: flex;
@@ -1379,6 +1542,7 @@
 }
 
 .nfe-stage__area {
+    position: relative;
     flex: 1;
     display: flex;
     justify-content: center;
@@ -1450,6 +1614,24 @@
     width: 100%;
     border: 0;
     background: var(--nfe-surface);
+}
+
+/* The back-end page with "Loading …" over it until it is there. */
+.nfe-panel__frame {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.nfe-panel__wait {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    right: 0;
+    justify-content: center;
+    margin: 0;
 }
 
 .nfe-panel__foot {
