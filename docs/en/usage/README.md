@@ -14,7 +14,7 @@ not work.
 
 | Page | What it is about |
 | --- | --- |
-| [Getting started](getting-started.md) | Opening the editor in the preview, the sidebar, finishing |
+| [Getting started](getting-started.md) | Opening the editor in the preview, the sidebar (collapse, beside or over the page, width), finishing |
 | [Editing text, images and links](editing.md) | Headlines, texts, images, links, the menu of an element, context menu, all fields, saving |
 | [Changing the structure](structure.md) | Inserting, moving, duplicating, hiding and deleting elements, articles, elements in elements |
 | [Pages (Plus)](pages.md) | Publishing, page settings, creating pages with their language versions, duplicating and deleting pages |

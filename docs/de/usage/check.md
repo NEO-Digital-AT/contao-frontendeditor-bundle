@@ -3,7 +3,7 @@ titel: Prüfen und Bildschirmgrößen
 kurzfassung: Die SEO-Prüfung mit Punktzahl und Fokus-Suchbegriff, die Prüfung der Barrierefreiheit und die Seite in Handy- und Tablet-Größe.
 zielgruppe: anwender
 sprache: de
-stand: 2026-11-12
+stand: 2026-11-18
 ---
 
 # Prüfen und Bildschirmgrößen
@@ -90,16 +90,24 @@ Die Prüfung ersetzt keine Prüfung durch Menschen; die Ansicht sagt das auch.
 
 ## Bildschirmgrößen
 
-1. Im Kopf der Seitenleiste auf **Bildschirmgröße** klicken.
-2. **Handy** (390 px) oder **Tablet** (820 px) wählen. Die Seite neben der
-   Seitenleiste wird so breit wie das Gerät; es gilt das Layout der Seite für
-   diese Breite. **Drehen** stellt die Breite des quer gehaltenen Geräts ein
-   (844 px oder 1180 px); ist das Fenster schmäler, lässt sich die Seite seitlich
-   rollen.
-3. **Computer**, **Schließen** (×) oder Esc in der Leiste über der Seite führt
-   zur normalen Breite zurück.
+1. Im Kopf der Seitenleiste auf **Bildschirmgröße** klicken: der Knopf mit dem
+   Fenstersymbol, zwischen dem Fragezeichen (**Kurzanleitung**) und dem Kreuz
+   (**Bearbeiten beenden**); 1 im Bild unten.
+2. Sein Menü öffnet sich (2): **Handy (390 px)** oder **Tablet (820 px)**
+   wählen.
 
-![Die Seite als Handy in der Ansicht Bildschirmgröße.](bilder/screen-size.png)
+![Der Kopf der Seitenleiste mit dem Menü der Bildschirmgrößen. 1: der Knopf „Bildschirmgröße“. 2: sein Menü mit „Computer“, „Tablet (820 px)“ und „Handy (390 px)“.](bilder/screen-size-menu.png)
+
+3. Die Seite neben der Seitenleiste wird so breit wie das Gerät; es gilt das
+   Layout der Seite für diese Breite. Eine Leiste über der Seite nennt die
+   Größe und hat drei Bedienelemente:
+   - die Auswahl der Größe (1): ein anderes Gerät, oder **Computer** für die
+     normale Breite;
+   - **Drehen** (2): die Breite des quer gehaltenen Geräts (844 px oder
+     1180 px); ist das Fenster schmäler, lässt sich die Seite seitlich rollen;
+   - **Schließen** (×, 3), oder Esc: zurück zur normalen Breite.
+
+![Die Seite als Handy. 1: die Auswahl der Größe. 2: „Drehen“. 3: „Schließen“.](bilder/screen-size.png)
 
 In dieser Breite funktioniert alles wie in der normalen: auswählen, bearbeiten,
 speichern, die Prüfungen. Bildschirmgrößen werden auf Bildschirmen breiter als

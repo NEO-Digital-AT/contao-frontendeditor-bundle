@@ -3,7 +3,7 @@ titel: Erste Schritte
 kurzfassung: Den Editor in Contaos Vorschau öffnen, sich in der Seitenleiste zurechtfinden, beenden.
 zielgruppe: anwender
 sprache: de
-stand: 2026-11-14
+stand: 2026-11-18
 ---
 
 # Erste Schritte
@@ -71,23 +71,51 @@ Editors in einem Browser weist ein Hinweis darauf hin.
 
 ## Die Seitenleiste
 
-- Der Streifen am rechten Rand hat zwei Knöpfe. Der obere (Pfeil) klappt die
-  Seitenleiste ein und wieder aus; eingeklappt zeigt eine Leiste unter der
-  Seite den Stand mit **Abbrechen** und **Speichern**.
-- Die Nadel darunter legt fest, wo die Seitenleiste steht:
-  - **Angeheftet** (Voreinstellung): neben der Seite. Die Seite wird um ihre
-    Breite schmäler; nichts vom Editor verdeckt sie. Der Browser merkt sich, ob
-    sie eingeklappt ist.
-  - **Gelöst:** über der Seite. Die Seite behält ihre ganze Breite. Die
-    Seitenleiste ist zu Beginn eingeklappt, öffnet sich von selbst, wenn eine
-    Ansicht sie braucht (**Alle Felder**, **Sprachen**, **Beiträge** …), und
-    klappt wieder ein, wenn diese Ansicht verlassen wird. Ein Klick in die Seite
-    klappt sie ebenfalls ein, außer sie zeigt ein Formular, die Schreibhilfe
-    oder die Sprachen.
+Der Streifen am rechten Rand der Ansicht hat zwei Knöpfe: Der Pfeil klappt die
+Seitenleiste ein und aus, die Nadel legt fest, ob sie neben der Seite steht oder
+über ihr liegt.
 
-  Der Browser merkt sich die Wahl.
-- Ihre Breite lässt sich ändern: am Griff am linken Rand ziehen, oder den Rand
-  fokussieren und die Pfeiltasten nutzen. Der Browser merkt sich die Breite.
+![Die Editor-Ansicht mit der Seitenleiste neben der Seite. 1: der Pfeil „Seitenleiste einklappen“. 2: die Nadel „Neben der Seite anheften“, gedrückt. 3: der Griff am linken Rand der Seitenleiste, der ihre Breite ändert.](bilder/sidebar-strip.png)
+
+### Ein- und ausklappen
+
+1. Oben im Streifen auf den Pfeil klicken (**Seitenleiste einklappen**, 1 im
+   Bild oben). Die Seitenleiste klappt weg, die Seite bekommt die ganze Breite.
+2. Eine Leiste unter der Seite zeigt weiter den Stand (**Alles gespeichert**
+   oder **Ungespeicherte Änderungen**) mit **Abbrechen** und **Speichern**; Sie
+   können also speichern, ohne die Seitenleiste zu öffnen.
+3. Derselbe Pfeil, jetzt nach links (**Seitenleiste ausklappen**), öffnet die
+   Seitenleiste wieder.
+
+![Die Seitenleiste eingeklappt. 1: der Pfeil „Seitenleiste ausklappen“. 2: die Leiste unter der Seite mit dem Stand, „Abbrechen“ und „Speichern“.](bilder/sidebar-collapsed.png)
+
+Solange die Seitenleiste angeheftet ist, merkt sich der Browser, ob sie
+eingeklappt ist.
+
+### Neben der Seite oder über ihr
+
+Die Nadel unter dem Pfeil (2 im ersten Bild) legt fest, wo die Seitenleiste
+steht. Ein Klick schaltet um; der Browser merkt sich die Wahl.
+
+- **Angeheftet** (Nadel gedrückt, Voreinstellung): neben der Seite. Die Seite
+  wird um die Breite der Seitenleiste schmäler; nichts vom Editor verdeckt sie.
+- **Gelöst:** über der Seite. Die Seite behält ihre ganze Breite, so wie
+  Besucher sie sehen, und die Seitenleiste liegt über ihrem rechten Teil. Sie
+  ist zu Beginn eingeklappt, öffnet sich von selbst, wenn eine Ansicht sie
+  braucht (**Alle Felder**, **Sprachen**, **Beiträge** …), und klappt wieder
+  ein, wenn diese Ansicht verlassen wird. Ein Klick in die Seite klappt sie
+  ebenfalls ein, außer sie zeigt ein Formular, die Schreibhilfe oder die
+  Sprachen.
+
+![Die Seitenleiste gelöst. 1: die Nadel, nicht gedrückt. 2: Die Seitenleiste liegt über der Seite; die Seite behält ihre ganze Breite.](bilder/sidebar-over-page.png)
+
+### Breite
+
+Am Griff am linken Rand der Seitenleiste ziehen (3 im ersten Bild), oder den
+Rand anklicken und die Pfeiltasten nutzen. Der Browser merkt sich die Breite.
+
+### Was die Seitenleiste sonst zeigt
+
 - Über der Struktur steht Contaos Brotkrumen-Navigation des gewählten
   Elements: **Alle Seiten** › Seite › Artikel › Element. Ein Klick geht auf
   diese Ebene hinauf; **Alle Seiten** öffnet Contaos Seitenbaum, in dem neue

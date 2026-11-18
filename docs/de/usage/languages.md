@@ -3,7 +3,7 @@ titel: Sprachen
 kurzfassung: Die Sprachversionen einer Seite nebeneinander bearbeiten, maschinelle Übersetzungsvorschläge (Azure Translator, DeepL oder ein KI-Modell), veraltete Übersetzungen.
 zielgruppe: anwender
 sprache: de
-stand: 2026-11-14
+stand: 2026-11-18
 ---
 
 # Sprachen
@@ -25,7 +25,7 @@ Kontextmenü öffnet das Übersetzungsfenster.
 2. Die Sprachversion wählen. Die Seitenleiste wird breiter und zeigt die Seite in
    der Hauptsprache neben der Sprachversion, Element für Element.
 
-![Die Ansicht „Sprachen“: links die Hauptsprache, rechts die Sprachversion, jedes Paar mit seinem Stand.](bilder/languages.png)
+![Die Ansicht „Sprachen“: links die Hauptsprache, rechts die Sprachversion, jedes Paar mit seinem Stand. 1: die gezeigte Sprachversion. 2: „Ganze Seite übersetzen“. 3: der Stand eines Paars, hier „Übersetzung veraltet“. 4: „Übersetzungsfenster öffnen“ dieses Elements.](bilder/languages.png)
 
 Jedes Paar hat einen Stand:
 
@@ -113,6 +113,23 @@ Fenster lädt (**Wird geladen …**) oder speichert (**Wird gespeichert …**);
 Fenster ohne Rückfrage.
 
 Vorschläge sind gekennzeichnet: „Vorschlag (Dienst) – bitte prüfen“.
+
+![Das Übersetzungsfenster nach „Alle Felder übersetzen“. 1: ein Vorschlag im Feld der Sprache, in die übersetzt wird. 2: seine Kennzeichnung „Vorschlag (KI-Modell) – bitte prüfen“. 3: „Speichern“.](bilder/translation-proposals.png)
+
+**Beispiel** (das Bild oben, das Fenster auf der deutschen Seite geöffnet, aus
+der Hauptsprache Deutsch ins Englische):
+
+| Text | Deutsch | Vorschlag (Englisch) |
+| --- | --- | --- |
+| Überschrift | Die Terrasse | The terrace |
+| Alternativer Text | Blick von der Terrasse auf den See | View from the terrace of the lake |
+| Bildtitel | Terrasse am See | Terrace by the lake |
+| Bildunterschrift | Die Terrasse am Abend | The terrace in the evening |
+
+Jeden Vorschlag prüfen und im Feld ändern, wo nötig: Der Alternativtext liest
+sich zum Beispiel als „View of the lake from the terrace“ besser. Vor
+**Speichern** wird nichts gespeichert.
+
 **Speichern** speichert, was sich geändert hat, in die Sprache rechts und
 setzt den Stand:
 
@@ -166,6 +183,8 @@ sagt, wie weit es ist (**Element 2 von 5 wird übersetzt …**, auch in der
 Leiste); die Karte, die gerade übersetzt wird, ist markiert, und Karten und
 Knöpfe sind gesperrt, bis es fertig ist. Die Vorschläge jedes Elements
 erscheinen in seiner Karte.
+
+![Die Ansicht „Sprachen“, während die ganze Seite übersetzt wird. 1: die Ladeanzeige über dem Vergleich, mit dem Fortschritt. 2: derselbe Fortschritt in der Leiste darüber.](bilder/translate-page-progress.png)
 
 Gespeichert ist noch nichts. Jedes Element zeigt, wie viele Vorschläge es hat:
 **Übernehmen und speichern** speichert sie, wie sie sind, **Prüfen** öffnet sie

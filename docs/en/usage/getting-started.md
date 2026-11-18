@@ -3,7 +3,7 @@ title: Getting started
 summary: Opening the editor in Contao's preview, finding your way in the sidebar, finishing.
 audience: users
 language: en
-updated: 2026-11-14
+updated: 2026-11-18
 ---
 
 # Getting started
@@ -69,22 +69,49 @@ browser, a note points to it.
 
 ## The sidebar
 
-- The strip at the right edge has two buttons. The upper one (arrow) collapses
-  the sidebar and expands it again; collapsed, a bar below the page shows the
-  state with **Cancel** and **Save**.
-- The pin below it decides where the sidebar stands:
-  - **Pinned** (default): beside the page. The page gets narrower by its width;
-    nothing of the editor covers it. The browser remembers whether it is
-    collapsed.
-  - **Not pinned:** over the page. The page keeps its whole width. The sidebar
-    is collapsed at the start, opens by itself when a view needs it (**All
-    fields**, **Languages**, **Posts** …), and closes again when that view is
-    left. A click into the page closes it too, unless it shows a form, the
-    writing aid or the languages.
+The strip at the right edge of the view holds two buttons: the arrow collapses
+and expands the sidebar, the pin decides whether it stands beside the page or
+lies over it.
 
-  The browser remembers the choice.
-- Its width can be changed: drag the grip at its left edge, or focus the edge
-  and use the arrow keys. The browser remembers the width.
+![The editor view with the sidebar beside the page. 1: the arrow "Collapse sidebar". 2: the pin "Pin beside the page", pressed. 3: the grip at the left edge of the sidebar, which changes its width.](bilder/sidebar-strip.png)
+
+### Collapse and expand
+
+1. Click the arrow at the top of the strip (**Collapse sidebar**, 1 in the
+   image above). The sidebar folds away and the page gets the whole width.
+2. A bar below the page keeps the state (**All saved** or **Unsaved
+   changes**) with **Cancel** and **Save**, so you can save without opening
+   the sidebar.
+3. The same arrow, now pointing left (**Expand sidebar**), opens the sidebar
+   again.
+
+![The sidebar collapsed. 1: the arrow "Expand sidebar". 2: the bar below the page with the state, "Cancel" and "Save".](bilder/sidebar-collapsed.png)
+
+While the sidebar is pinned, the browser remembers whether it is collapsed.
+
+### Beside the page or over it
+
+The pin below the arrow (2 in the first image) decides where the sidebar
+stands. Click it to switch; the browser remembers the choice.
+
+- **Pinned** (the pin pressed, default): beside the page. The page gets
+  narrower by the width of the sidebar; nothing of the editor covers it.
+- **Not pinned:** over the page. The page keeps its whole width, as visitors
+  see it, and the sidebar lies over its right part. The sidebar is collapsed at
+  the start, opens by itself when a view needs it (**All fields**,
+  **Languages**, **Posts** …), and closes again when that view is left. A click
+  into the page closes it too, unless it shows a form, the writing aid or the
+  languages.
+
+![The sidebar not pinned. 1: the pin, not pressed. 2: the sidebar lies over the page; the page keeps its whole width.](bilder/sidebar-over-page.png)
+
+### Width
+
+Drag the grip at the left edge of the sidebar (3 in the first image), or click
+the edge and use the arrow keys. The browser remembers the width.
+
+### What else is in the sidebar
+
 - Above the structure, Contao's breadcrumb of the selected element: **All
   pages** › page › article › element. A click goes up to that level; **All
   pages** opens Contao's page tree, where new pages are created (Plus).

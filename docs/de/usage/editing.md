@@ -3,7 +3,7 @@ titel: Texte und Bilder bearbeiten
 kurzfassung: Überschriften, Texte, Bilder und Links auf der Seite ändern, das Menü eines Elements, das Kontextmenü, alle Felder eines Elements, speichern und abbrechen.
 zielgruppe: anwender
 sprache: de
-stand: 2026-11-14
+stand: 2026-11-18
 ---
 
 # Texte, Bilder und Links bearbeiten
@@ -240,7 +240,7 @@ Formular:
 3. Die Felder ändern und im Formular auf **Speichern** (oder **Speichern und
    schließen**) klicken.
 
-![Contaos Formular eines Textelements in der Seitenleiste, neben der Seite, darüber „Übersetzungsfenster öffnen“ (Plus).](bilder/all-fields.png)
+![Contaos Formular eines Textelements in der Seitenleiste, neben der Seite. 1: das Formular. 2: „Zurück zur Struktur“. 3: „Übersetzungsfenster öffnen“ (Plus).](bilder/all-fields.png)
 
 **Ergebnis:** Gleich nach **Speichern** lädt die Seite neben dem Formular neu
 und zeigt die Änderung, das Formular bleibt offen. Solange sie lädt, ist die
