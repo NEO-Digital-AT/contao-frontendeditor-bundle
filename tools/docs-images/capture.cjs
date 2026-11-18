@@ -195,6 +195,8 @@ const formFrame = async (s) => {
   return frame;
 };
 const first = (s) => s.frame.getByText(text.first).first();
+// What the AI returned for an image, printed so that the documentation can quote it as an example.
+const quote = (label, list) => console.log('   ' + label + ':\n' + list.map((line) => '     - ' + line.replace(/\s+/g, ' ').trim()).join('\n'));
 
 const shots = {
   'editor-overview': async (s) => {
@@ -253,7 +255,46 @@ const shots = {
     await (await tabEntry(s, 'form')).click();
     await formFrame(s);
     await rest(s);
+    await mark(s, `
+      neoAnnotate.frame(R.querySelector('.nfe-panel__frame'), { number: 1, padding: 0 });
+      const save = R.querySelector('.nfe-panel__head button');
+      neoAnnotate.frame(save, { number: 2 });
+      const tr = R.querySelector('[data-action="form-translate"]');
+      if (tr) neoAnnotate.frame(tr, { number: 3 });`);
     await shot(s, docs + 'usage/bilder/all-fields.png');
+  },
+  // The strip at the right edge and the grip of the sidebar.
+  'sidebar-strip': async (s) => {
+    await mark(s, `
+      neoAnnotate.frame(R.querySelector('.nfe-rail [data-action="panel"]'), { number: 1 });
+      neoAnnotate.frame(R.querySelector('.nfe-rail [data-action="pin"]'), { number: 2 });
+      const grip = R.querySelector('.nfe-resize');
+      if (grip) neoAnnotate.frame(grip, { number: 3, padding: 2 });`);
+    await shot(s, docs + 'usage/bilder/sidebar-strip.png');
+  },
+  // Not pinned: the sidebar lies over the page, which keeps its whole width.
+  'sidebar-over-page': async (s) => {
+    await ed(s, '.nfe-rail [data-action="pin"]').click(); await s.page.waitForTimeout(400);
+    if (await ed(s, '.nfe-panel').isHidden()) { await ed(s, '.nfe-rail [data-action="panel"]').click(); await s.page.waitForTimeout(500); }
+    await rest(s);
+    await mark(s, `
+      neoAnnotate.frame(R.querySelector('.nfe-panel'), { number: 2, padding: 0 });
+      neoAnnotate.frame(R.querySelector('.nfe-rail [data-action="pin"]'), { number: 1 });`);
+    await shot(s, docs + 'usage/bilder/sidebar-over-page.png');
+  },
+  // Collapsed: the page has the whole width, the bar below it keeps the state and Save.
+  'sidebar-collapsed': async (s) => {
+    await ed(s, '.nfe-rail [data-action="panel"]').click(); await s.page.waitForTimeout(600);
+    await mark(s, `
+      neoAnnotate.frame(R.querySelector('.nfe-rail [data-action="panel"]'), { number: 1 });
+      const bar = R.querySelector('.nfe-float');
+      neoAnnotate.frame(bar, { padding: 2 });
+      const r = bar.getBoundingClientRect();
+      const at = document.createElement('div');
+      at.style.cssText = 'position:absolute;width:1px;height:1px;left:' + (r.left + 28 + scrollX) + 'px;top:' + (r.top - 2 + scrollY) + 'px';
+      document.body.append(at);
+      neoAnnotate.number(at, 2);`);
+    await shot(s, docs + 'usage/bilder/sidebar-collapsed.png');
   },
   'insert-element': async (s) => {
     await pick(s, first(s));
@@ -322,7 +363,28 @@ const shots = {
     try {
       await ed(s, '.nfe-views__item[data-view=languages]').click(); await s.page.waitForTimeout(1500);
       await rest(s);
+      await mark(s, `
+        neoAnnotate.frame(R.querySelector('.nfe-lang-bar__pair select'), { number: 1 });
+        neoAnnotate.frame(R.querySelector('[data-action="lang-translate-page"]'), { number: 2 });
+        const chip = R.querySelector('.nfe-chip--outdated');
+        if (chip) { neoAnnotate.frame(chip, { padding: 3 }); N(chip, 3, 3); }
+        const card = chip?.closest('.nfe-card');
+        const open = card ? [...card.querySelectorAll('.nfe-card__actions button')].find((b) => b.textContent.trim() === A.open) : null;
+        if (open) neoAnnotate.frame(open, { number: 4 });`, { open: t('tr_window') });
       await shot(s, docs + 'usage/bilder/languages.png');
+      // While the whole page is translated: how far it is, the card being translated, the others locked.
+      await ed(s, '[data-action="lang-translate-page"]').click();
+      await s.page.waitForSelector('nfe-editor .nfe-card--busy', { timeout: 10000 }).catch(() => null);
+      await s.page.evaluate(() => window.neoAnnotate?.clear());
+      await s.page.waitForTimeout(150);
+      await s.page.waitForTimeout(200);
+      await mark(s, `
+        const note = R.querySelector('.nfe-busy-cover__note');
+        if (note) neoAnnotate.frame(note, { number: 1 });
+        const bar = R.querySelector('.nfe-lang-bar__summary.nfe-loading');
+        if (bar) neoAnnotate.frame(bar, { number: 2 });`);
+      await shot(s, docs + 'usage/bilder/translate-page-progress.png');
+      await s.page.waitForFunction(() => !document.querySelector('nfe-editor').shadowRoot.querySelector('.nfe-lang-bar__summary.nfe-loading'), null, { timeout: 120000 }).catch(() => null);
     } finally {
       if (link[0]) sql("UPDATE tl_neo_fe_link SET source_hash = '" + link[1] + "', outdated = '" + (link[2] || '') + "' WHERE id = " + link[0]);
     }
@@ -360,6 +422,21 @@ const shots = {
         const one = [...d.querySelectorAll('button[aria-label]')].find((b) => b.getAttribute('aria-label').startsWith(A.one));
         if (one) neoAnnotate.frame(one, { number: 3 });`, { all: t('tr_propose_all'), one: t('tr_propose').split('{')[0] });
       await shot(s, docs + 'usage/bilder/translation-window.png');
+      // The proposals for all fields, marked as such; Save takes them over.
+      await s.page.evaluate(() => window.neoAnnotate?.clear());
+      await s.page.locator('nfe-editor [data-action="tr-propose-all"]').click();
+      await s.page.waitForSelector('nfe-editor .nfe-tr__row--proposed', { timeout: 60000 });
+      await s.page.waitForFunction(() => !document.querySelector('nfe-editor').shadowRoot.querySelector('.nfe-dialog--translate[aria-busy="true"]'), null, { timeout: 60000 });
+      await s.page.waitForTimeout(500);
+      quote('proposals', await s.page.evaluate(() => [...document.querySelector('nfe-editor').shadowRoot.querySelectorAll('.nfe-tr__row--proposed')].map((row) => row.querySelector('.nfe-tr__label').textContent + ': ' + row.querySelector('.nfe-tr__source').textContent + ' -> ' + (row.querySelector('.nfe-tr__target input, .nfe-tr__target textarea')?.value || row.querySelector('.nfe-tr__target [contenteditable]')?.textContent || ''))));
+      await mark(s, `
+        const d = R.querySelector('.nfe-dialog--translate');
+        const row = d.querySelector('.nfe-tr__row--proposed');
+        if (row) neoAnnotate.frame(row.querySelector('.nfe-tr__target'), { number: 1 });
+        const note = row?.querySelector('.nfe-tr__note');
+        if (note) neoAnnotate.frame(note, { number: 2 });
+        neoAnnotate.frame(d.querySelector('[data-action="tr-save"]'), { number: 3 });`);
+      await shot(s, docs + 'usage/bilder/translation-proposals.png');
     } finally {
       for (const [id, [headline, title, caption]] of saved) {
         const value = (hex) => (hex ? 'UNHEX("' + hex + '")' : "''");
@@ -372,9 +449,21 @@ const shots = {
     await (await tabEntry(s, 'edit')).click(); await s.page.waitForTimeout(400);
     await first(s).click();
     await (await btn(s, t('writing_aid'))).click(); await s.page.waitForTimeout(500);
-    await (await btn(s, t('create_proposals'))).click(); await s.page.waitForTimeout(1800);
+    await ed(s, '#nfe-aid-term').fill(lang === 'en' ? 'holiday apartment by the lake' : 'Ferienwohnung am See');
+    await (await btn(s, t('create_proposals'))).click();
+    await s.page.waitForSelector('nfe-editor .nfe-aid__item', { timeout: 90000 });
+    await s.page.waitForTimeout(600);
     await rest(s);
-    await mark(s, `neoAnnotate.frame(R.querySelector('.nfe-aid__list'), { number: 1 });`);
+    quote('original', [await first(s).textContent()]);
+    quote('proposals', await s.page.evaluate(() => [...document.querySelector('nfe-editor').shadowRoot.querySelectorAll('.nfe-aid__text')].map((n) => n.textContent)));
+    await mark(s, `
+      const pick = (area) => [...area.querySelectorAll('.nfe-format button')].find((b) => (b.getAttribute('aria-label') || b.textContent).includes(A.aid));
+      const inPage = pick(P);
+      const aid = inPage ? F(inPage) : pick(R);
+      if (aid) neoAnnotate.frame(aid, { number: 1 });
+      neoAnnotate.frame(R.querySelector('#nfe-aid-term'), { number: 2 });
+      neoAnnotate.frame(R.querySelector('[data-action="aid-create"]'), { number: 3 });
+      neoAnnotate.frame(V(R.querySelector('.nfe-aid__list')), { number: 4 });`, { aid: t('writing_aid') });
     await shot(s, docs + 'usage/bilder/writing-aid.png');
   },
   'check-seo': async (s) => {
@@ -404,9 +493,19 @@ const shots = {
   },
   'screen-size': async (s) => {
     await (await btn(s, t('screen_size'))).click(); await s.page.waitForTimeout(400);
+    await mark(s, `
+      neoAnnotate.frame(B(A.size), { number: 1 });
+      neoAnnotate.frame(R.querySelector('.nfe-menu'), { number: 2 });`, { size: t('screen_size') });
+    await shot(s, docs + 'usage/bilder/screen-size-menu.png');
+    await s.page.evaluate(() => window.neoAnnotate?.clear());
     const phone = s.page.locator('nfe-editor [role=menuitemradio], nfe-editor [role=menuitem]').filter({ hasText: t('screen_phone_name') }).first();
     await phone.click(); await s.page.waitForTimeout(2500);
     await rest(s);
+    await mark(s, `
+      const bar = R.querySelector('.nfe-screen__bar');
+      neoAnnotate.frame(bar.querySelector('select'), { number: 1 });
+      neoAnnotate.frame(B(A.rotate), { number: 2 });
+      neoAnnotate.frame(bar.querySelector('button[aria-label="' + A.close + '"]'), { number: 3 });`, { rotate: t('screen_rotate'), close: t('close') });
     await shot(s, docs + 'usage/bilder/screen-size.png');
   },
   'page-style': async (s) => {

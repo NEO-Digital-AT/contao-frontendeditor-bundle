@@ -3,7 +3,7 @@ title: Languages
 summary: Editing the language versions of a page side by side, machine translation proposals (Azure Translator, DeepL or an AI model), outdated translations.
 audience: users
 language: en
-updated: 2026-11-15
+updated: 2026-11-18
 ---
 
 # Languages
@@ -25,7 +25,7 @@ translation window.
 2. Choose the language version. The sidebar widens and shows the page in the
    main language next to the version, element by element.
 
-![The view "Languages": the main language on the left, the language version on the right, each pair with its state.](bilder/languages.png)
+![The view "Languages": the main language on the left, the language version on the right, each pair with its state. 1: the language version shown. 2: "Translate whole page". 3: the state of a pair, here "Translation outdated". 4: "Open translation window" of that element.](bilder/languages.png)
 
 Each pair has a state:
 
@@ -108,8 +108,25 @@ chosen. The same applies while the window loads (**Loading …**) or saves
 (**Saving …**); **Cancel** and the close button stay usable and close the
 window without asking.
 
-Proposals are marked "Proposal (service) – please check". **Save** saves what
-changed into the language on the right and updates the states:
+Proposals are marked "Proposal (service) – please check".
+
+![The translation window after "Translate all fields". 1: a proposal in the field of the language translated into. 2: its mark "Proposal (AI model) – please check". 3: "Save".](bilder/translation-proposals.png)
+
+**Example** (the image above, the window opened on the English page, translating
+into the main language German):
+
+| Text | English | Proposal (German) |
+| --- | --- | --- |
+| Headline | The terrace | Die Terrasse |
+| Alternate text | View of the lake from the terrace | Blick auf den See von der Terrasse |
+| Image title | Terrace by the lake | Terrasse am See |
+| Image caption | The terrace in the evening | Die Terrasse am Abend |
+
+Check each proposal and change it in its field where needed; nothing is saved
+before **Save**.
+
+**Save** saves what changed into the language on the right and updates the
+states:
 
 - from the main language into a version: the version is **current**,
 - from a version into the main language: the main language changed, so its
@@ -154,6 +171,8 @@ While it runs, a veil with a spinner lies over the comparison and says how far
 it is (**Translating element 2 of 5 …**, also in the bar), the card being
 translated is marked, and the cards and buttons are locked until it is done.
 The proposals of each element appear in its card.
+
+![The view "Languages" while the whole page is translated. 1: the veil over the comparison, with how far it is. 2: the same in the bar above it.](bilder/translate-page-progress.png)
 
 Nothing is saved yet. Each element shows how many proposals it has:
 **Apply and save** saves them as they are, **Check** opens them in the window,

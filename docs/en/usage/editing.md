@@ -3,7 +3,7 @@ title: Editing text and images
 summary: Changing headlines, texts, images and links on the page, the menu of an element, the context menu, all fields of an element, saving and cancelling.
 audience: users
 language: en
-updated: 2026-11-14
+updated: 2026-11-18
 ---
 
 # Editing text, images and links
@@ -225,7 +225,7 @@ class, the image size, the visibility period) is in Contao's own form:
    it is there).
 3. Change the fields and click **Save** (or **Save and close**) in the form.
 
-![Contao's form of a text element in the sidebar, next to the page, with "Open translation window" (Plus) above it.](bilder/all-fields.png)
+![Contao's form of a text element in the sidebar, next to the page. 1: the form. 2: "Back to the structure". 3: "Open translation window" (Plus).](bilder/all-fields.png)
 
 **Result:** right after **Save**, the page next to the form loads again and
 shows the change, the form stays open. While it loads, the page is dimmed with

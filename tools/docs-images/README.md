@@ -71,7 +71,11 @@ images and restores it at the end. The image `language-versions` creates the
 page "Herbstangebot" and removes it again; for the image `languages` the
 English text is an outdated translation for the time of the shot. For the image
 `translation-window` the images of `angebot` and `offer` get a headline, a title and a caption
-for the time of the shot. A cookie hint of the website counts as answered in the
+for the time of the shot; the image `translate-page-progress` is taken while
+**Translate whole page** runs on it (the proposals are not saved). For
+`writing-aid` and `translation-proposals` the script prints what the AI
+returned, so that the documentation can quote it as the example of the image.
+A cookie hint of the website counts as answered in the
 browser of the shots (only there; no consent is logged), and its button that
 opens it again is hidden, as is the editor's note on the quick guide.
 

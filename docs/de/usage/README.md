@@ -14,7 +14,7 @@ Lizenz), und was zu tun ist, wenn etwas nicht funktioniert.
 
 | Seite | Worum es geht |
 | --- | --- |
-| [Erste Schritte](getting-started.md) | Den Editor in der Vorschau öffnen, die Seitenleiste, beenden |
+| [Erste Schritte](getting-started.md) | Den Editor in der Vorschau öffnen, die Seitenleiste (einklappen, neben oder über der Seite, Breite), beenden |
 | [Texte, Bilder und Links bearbeiten](editing.md) | Überschriften, Texte, Bilder, Links, Menü eines Elements, Kontextmenü, alle Felder, speichern |
 | [Struktur ändern](structure.md) | Elemente einfügen, verschieben, duplizieren, ausblenden und löschen, Artikel, Elemente in Elementen |
 | [Seiten (Plus)](pages.md) | Veröffentlichen, Seiteneinstellungen, Seiten mit ihren Sprachversionen anlegen, duplizieren und löschen |

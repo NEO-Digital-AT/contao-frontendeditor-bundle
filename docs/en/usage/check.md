@@ -3,7 +3,7 @@ title: Checks and screen sizes
 summary: The SEO check with score and focus keyword, the accessibility check, and the page in phone and tablet size.
 audience: users
 language: en
-updated: 2026-11-12
+updated: 2026-11-18
 ---
 
 # Checks and screen sizes
@@ -84,15 +84,23 @@ The check does not replace a check by people; the view says so.
 
 ## Screen sizes
 
-1. Click **Screen size** in the head of the sidebar.
-2. Choose **Phone** (390 px) or **Tablet** (820 px). The page next to the
-   sidebar becomes as wide as the device; the page's layout for that width
-   applies. **Rotate** sets the width of the device held across (844 px or
-   1180 px); where the window is narrower, the page can be scrolled sideways.
-3. **Computer**, **Close** (×) or Esc in the bar above the page goes back to the
-   normal width.
+1. Click **Screen size** in the head of the sidebar: the button with the
+   window symbol, between the question mark (**Quick guide**) and the cross
+   (**Stop editing**); 1 in the image below.
+2. Its menu opens (2): choose **Phone (390 px)** or **Tablet (820 px)**.
 
-![The page shown as a phone in the screen-size view.](bilder/screen-size.png)
+![The head of the sidebar with the menu of the screen sizes. 1: the button "Screen size". 2: its menu with "Computer", "Tablet (820 px)" and "Phone (390 px)".](bilder/screen-size-menu.png)
+
+3. The page next to the sidebar becomes as wide as the device; the page's
+   layout for that width applies. A bar above the page names the size and
+   holds three controls:
+   - the choice of the size (1): another device, or **Computer** for the
+     normal width;
+   - **Rotate** (2): the width of the device held across (844 px or 1180 px);
+     where the window is narrower, the page can be scrolled sideways;
+   - **Close** (×, 3), or Esc: back to the normal width.
+
+![The page as a phone. 1: the choice of the size. 2: "Rotate". 3: "Close".](bilder/screen-size.png)
 
 Everything works in this width as in the normal one: selecting, editing,
 saving, the checks. Screen sizes are offered on screens wider than 768 px.
