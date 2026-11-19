@@ -8,6 +8,7 @@ use Contao\Backend;
 use Contao\Config;
 use Contao\PageModel;
 use Neo\FrontendEditorBundle\EditMode;
+use Neo\FrontendEditorBundle\EditorAssets;
 use Neo\FrontendEditorBundle\Settings;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -147,6 +148,7 @@ final class EditorViewListener
         private readonly EditMode $editMode,
         private readonly Settings $settings,
         private readonly Packages $packages,
+        private readonly EditorAssets $assets,
         private readonly TranslatorInterface $translator,
         private readonly Environment $twig,
         #[Autowire('%contao.backend.route_prefix%')]
@@ -186,7 +188,7 @@ final class EditorViewListener
             // Until the page in the frame is there; the editor then shows the page's own title.
             'title' => (string) ($page->pageTitle ?: $page->title),
             'config' => $config,
-            'script' => $this->packages->getUrl('bundles/neofrontendeditor/editor.js'),
+            'script' => $this->assets->url('editor.js'),
         ]));
 
         $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
@@ -224,14 +226,14 @@ final class EditorViewListener
             'page' => $pageId,
             'backend' => $backend,
             'api' => $backend.'/frontend-editor',
-            'styles' => [$backend.'/frontend-editor/backend-styles', $this->packages->getUrl('bundles/neofrontendeditor/editor.css')],
+            'styles' => [$backend.'/frontend-editor/backend-styles', $this->assets->url('editor.css')],
             'cookie' => EditMode::COOKIE,
             'lang' => $locale,
             'texts' => $texts,
             'plurals' => $plurals,
             'icons' => $this->icons(),
             // Accessibility check (Pro): axe-core, loaded into the page only when the check runs.
-            'axe' => $this->packages->getUrl('bundles/neofrontendeditor/axe/axe.min.js'),
+            'axe' => $this->assets->url('axe/axe.min.js'),
             'axeLocale' => $this->axeLocale($locale),
             // Contao's rich text editor for the texts of the page (inline), where it is switched on (System › Settings).
             'tinymce' => Config::get('useRTE') ? $this->packages->getUrl('js/tinymce.min.js', 'contao-components/tinymce4') : null,
@@ -280,9 +282,9 @@ final class EditorViewListener
     private function fallbackIcon(string|null $directory, string $name): array|null
     {
         if (str_starts_with($name, '@')) {
-            $file = 'bundles/neofrontendeditor/icons/'.substr($name, 1);
+            $file = 'icons/'.substr($name, 1);
 
-            return ['light' => $this->packages->getUrl($file.'.svg'), 'dark' => $this->packages->getUrl($file.'--dark.svg')];
+            return ['light' => $this->assets->url($file.'.svg'), 'dark' => $this->assets->url($file.'--dark.svg')];
         }
 
         $light = $this->iconPath($directory, $name.'.svg');
@@ -306,6 +308,6 @@ final class EditorViewListener
     {
         $language = strtolower(substr($locale, 0, 2));
 
-        return is_file(\dirname(__DIR__, 2).'/public/axe/locales/'.$language.'.json') ? $this->packages->getUrl('bundles/neofrontendeditor/axe/locales/'.$language.'.json') : null;
+        return $this->assets->exists('axe/locales/'.$language.'.json') ? $this->assets->url('axe/locales/'.$language.'.json') : null;
     }
 }

@@ -4,6 +4,11 @@ All notable changes to this extension are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- Before Contao 5.7, the addresses of the editor's script, stylesheet, icons and accessibility check carry a version (a short hash of the file), so that after an update the browser loads the new files instead of keeping those of the old version. Contao 5.7 versions them itself; its version stays.
+
 ## [1.0.1] - 2026-11-18
 
 ### Fixed
