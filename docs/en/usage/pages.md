@@ -13,7 +13,7 @@ updated: 2026-11-12
 Above the structure in the sidebar (view **Page**) you see the state of the page
 and its actions.
 
-![The page bar above the structure. 1: the state "Published". 2: "Withdraw". 3: "New page". 4: "More about the page".](bilder/page-bar.png)
+![The page bar above the structure. 1: the state "Published". 2: "New page". 3: "More about the page". 4: "Withdraw", at the right end.](bilder/page-bar.png)
 
 ## State, publish, withdraw
 

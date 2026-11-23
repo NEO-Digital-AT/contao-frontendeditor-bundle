@@ -3,7 +3,7 @@ titel: Anpassen
 kurzfassung: Farben, Größen und Texte des Editors.
 zielgruppe: entwickler
 sprache: de
-stand: 2026-11-12
+stand: 2026-11-23
 ---
 
 # Anpassen
@@ -53,18 +53,21 @@ nfe-editor {
 
 Der Editor folgt dem Aussehen des Backends: ohne Skin sieht er aus wie Contaos
 Backend, mit einem Backend-Skin übernimmt er dessen Farben. Die Hauptaktion
-einer Zeile (**Speichern**, **Übernehmen**, **Anlegen** …) sieht aus wie die
-Hauptaktion des Backends, der erste Knopf eines Formulars: Contao zeichnet sie
-wie jeden anderen Knopf; ein Skin, der sie einfärbt (etwa mit weißer Schrift auf
-seiner Akzentfarbe), bekommt dieselben Farben im Editor. Der offene Reiter eines
-Elements (sein Typ bei offenem Menü) ist mit `--nfe-accent` gefüllt und so
-beschriftet, wie Contao auf seinem Orange schreibt: weiß im hellen Farbschema,
-schwarz im dunklen (`--white`).
+einer Zeile (**Speichern**, **Übernehmen**, **Anlegen** …) steht rechts außen,
+die weniger wichtigen Knöpfe davor. Contao zeichnet seine eigene Hauptaktion
+(den ersten Knopf eines Formulars) wie jeden anderen Knopf; der Editor zeichnet
+seine Hauptaktion stattdessen in Contaos Orange (`--nfe-primary`). Ein Skin, der
+die Hauptaktion des Backends einfärbt (etwa mit weißer Schrift auf seiner
+Akzentfarbe), gibt der Hauptaktion des Editors dieselben Farben
+(`--nfe-main-*`). Der offene Reiter eines Elements (sein Typ bei offenem Menü)
+ist mit `--nfe-accent` gefüllt und so beschriftet, wie Contao auf seinem Orange
+schreibt: weiß im hellen Farbschema, schwarz im dunklen (`--white`).
 
 | Variable | Was sie festlegt | Vorgabe |
 | --- | --- | --- |
 | `--nfe-on-accent` | Text auf der Akzentfarbe (offener Reiter) | `--white` |
 | `--nfe-main-bg`, `--nfe-main-text`, `--nfe-main-border` | Hauptaktion einer Zeile; setzt der Editor nur, wenn der Skin die Hauptaktion des Backends einfärbt | die Knöpfe des Backends |
+| `--nfe-primary`, `--nfe-primary-hover`, `--nfe-primary-text` | Hauptaktion einer Zeile, wo das Backend alle Knöpfe gleich zeichnet (Contao ohne Skin) | `#b35400`, `#9a4800`, `#fff` (Contaos Orange, dunkler für lesbare weiße Schrift) |
 
 Den Kontrast der eigenen Farben prüfen (Text mindestens 4,5:1). Contaos eigene
 weiße Schrift auf seinem Orange erreicht etwa 2,7:1; der Editor übernimmt sie,

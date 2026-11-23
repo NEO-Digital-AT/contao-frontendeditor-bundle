@@ -3,7 +3,7 @@ title: Editing text and images
 summary: Changing headlines, texts, images and links on the page, the menu of an element, the context menu, all fields of an element, saving and cancelling.
 audience: users
 language: en
-updated: 2026-11-18
+updated: 2026-11-23
 ---
 
 # Editing text, images and links
@@ -144,7 +144,12 @@ image** for each image field, **Open translation window** (Plus); then
 **Insert element after**; **Info** (web designers); **Delete** last. At the
 right of an entry are the keys that do the same on the selected element: Enter
 edits it, Alt+Arrow up or Alt+Arrow down moves it, Delete deletes it after a
-question. An entry your permissions do not allow is greyed out with the reason.
+question. On a page with language versions (Plus) a moved element takes its
+counterparts in the other languages along without asking; after a new element,
+a replaced image, hiding and deleting the editor asks whether the same is to
+happen there (see
+[Keep the languages in step](languages.md#keep-the-languages-in-step)). An
+entry your permissions do not allow is greyed out with the reason.
 The same entries are the lower part of the context menu (right click).
 
 ![The open menu of a text element. 1: the tab with grip, type and arrow. 2: the menu with every action for the element and, at the right, the keys that do the same.](bilder/element-menu.png)

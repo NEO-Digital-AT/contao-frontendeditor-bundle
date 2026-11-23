@@ -88,6 +88,22 @@ final class ElementPairingTest extends TestCase
         $this->assertNull($this->links->ofElement($en[0]));
     }
 
+    /**
+     * A new element whose languages the editor asks about (ElementSync) is
+     * left out: it is not paired by position with an element of the other
+     * language that happens to have the same type.
+     */
+    public function testANewElementIsLeftOutAndNotPairedByPosition(): void
+    {
+        $de = $this->elements(7, 100, ['headline', 'text']);
+        $en = $this->elements(25, 200, ['headline', 'text']);
+
+        $this->assertSame(1, $this->pairing()->pair(2, 24, 'en', static fn (): bool => true, [$de[1]]));
+        $this->assertSame($de[0], (int) $this->links->ofElement($en[0])['main']);
+        $this->assertNull($this->links->ofElement($en[1]), 'the English text belongs to nothing');
+        $this->assertSame([], $this->links->ofMains([$de[1]]), 'the new German text belongs to nothing');
+    }
+
     public function testAUserWhoMayNotChangeTheVersionPairsNothingAndLeavesItForOneWhoMay(): void
     {
         $this->elements(7, 100, ['text']);

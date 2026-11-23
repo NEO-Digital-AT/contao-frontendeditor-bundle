@@ -3,7 +3,7 @@ titel: Rechte
 kurzfassung: Welche Schalter der Erweiterung und welche Contao-Rechte jede Funktion des Editors braucht, mit fertigen Beispielgruppen.
 zielgruppe: betrieb
 sprache: de
-stand: 2026-11-14
+stand: 2026-11-23
 ---
 
 # Rechte
@@ -36,8 +36,8 @@ Alle Contao-Rechte unten werden im Backend unter **Benutzergruppen** (oder
 | **Elemente anlegen, verschieben und löschen** | Elemente einfügen, verschieben, duplizieren, ausblenden und löschen, auch Elemente in einem Akkordeon, einem Slider oder einer Elementgruppe | Basic |
 | **Artikel anlegen** | **Artikel anlegen** | Basic |
 | **Templates und Module (für Webdesigner)** | **Info** mit den Templates, Rahmen um Module, Formularfelder und Kommentare mit ihren Formularen, **Layout bearbeiten**, **Templates der Seite** | Basic |
-| **Sprachversionen bearbeiten (Plus)** | Die Ansicht **Sprachen** und das Übersetzungsfenster: nebeneinander, Texte übersetzen und speichern, verknüpfen, übernehmen, als aktuell markieren | Plus |
-| **Übersetzung anfordern (Plus)** | **Alle Felder übersetzen**, **Dieses Feld übersetzen** und **Ganze Seite übersetzen** (mit dem Übersetzungsdienst der Einstellungen) | Plus |
+| **Sprachversionen bearbeiten (Plus)** | Die Ansicht **Sprachen** und das Übersetzungsfenster: nebeneinander, Texte übersetzen und speichern, verknüpfen, übernehmen, als aktuell markieren; das Verschieben in allen Sprachen und die Frage, ob ein ersetztes Bild, Ausblenden, Einblenden und Löschen auch in den anderen Sprachen gelten ([Sprachversionen gleich halten](usage/languages.md#sprachversionen-gleich-halten)) | Plus |
+| **Übersetzung anfordern (Plus)** | **Alle Felder übersetzen**, **Dieses Feld übersetzen** und **Ganze Seite übersetzen** (mit dem Übersetzungsdienst der Einstellungen); mit **Sprachversionen bearbeiten** auch ein neues Element übersetzt in die anderen Sprachen einfügen | Plus |
 | **Seiten anlegen und veröffentlichen (Plus)** | **Neue Seite**, **Veröffentlichen**, **Zurückziehen**, **Seiteneinstellungen**, **Seite duplizieren**, **Seite löschen** | Plus |
 | **Beiträge bearbeiten (Plus)** | Die Ansicht **Beiträge** und **Beitrag bearbeiten** in Listen | Plus |
 | **Module öffnen (Plus)** | Die Ansicht **Module** | Plus |

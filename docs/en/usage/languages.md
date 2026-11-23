@@ -1,9 +1,9 @@
 ---
 title: Languages
-summary: Editing the language versions of a page side by side, machine translation proposals (Azure Translator, DeepL or an AI model), outdated translations.
+summary: Editing the language versions of a page side by side, keeping them in step, machine translation proposals (Azure Translator, DeepL or an AI model), outdated translations.
 audience: users
 language: en
-updated: 2026-11-18
+updated: 2026-11-23
 ---
 
 # Languages
@@ -198,6 +198,70 @@ For an outdated translation, **Open translation window** is the highlighted
 button. If the translation is still right, **…** › **Mark as current** confirms
 it.
 
+## Keep the languages in step
+
+On a page that exists in several languages, the editor keeps its elements in
+step: a move is carried into the other language versions without asking; for
+the other changes of the structure it asks whether they apply there as well.
+This belongs to the edition Plus: without a Plus licence for the website,
+without linked language versions or without the switch **Edit language
+versions (Plus)** it does not ask, and every change applies to its own page
+only. For a new element it also asks only when it can translate: with the
+switch **Request translations (Plus)** and a translation service set up.
+Otherwise the new element stays in its language; it can be taken over later
+in the view **Languages**. It asks only where the element has a linked
+counterpart there, or, for a new element, where the page has other languages. Versions made before the editor
+are paired first (see the end of *Take over and link*), so the question also
+comes for elements whose tab still says **not linked**.
+
+- **New element** (inserted, or duplicated): when its form is saved and closed,
+  choose per language:
+  - **Insert at the same place and translate**: a copy goes to the matching
+    place (after the counterpart of the element before it, otherwise at the
+    top of the matching article or element), is translated by the translation
+    service of the settings and linked as current. Elements inside it come
+    along and are translated too. If the translation service refuses or does
+    not answer, the copy is removed again; the message says why.
+  - **Link with an existing element**: for an element that is there already
+    and belongs to none yet (an element only that language had); the list
+    shows such elements of the matching article, those of the same type first.
+  - **Do not insert, only in this language**: the element stays in this
+    language only; its tab says **not in all languages**. It can be taken over
+    later in the view **Languages**.
+
+  **Only here** closes the question without doing anything in the other
+  languages. On the page of a version the main language comes first: the
+  element of the main language is translated from the language of the page,
+  the other versions as well. Without an element in the main language no
+  other version can be linked; the dialog says so.
+- **Image replaced** (context menu, the element's menu, or the image tools
+  while editing): once saved, the editor asks whether the counterparts get the
+  same image, with a box per language. **Only on this page** leaves the other
+  languages as they are; the link stays. Alternative text and caption stay
+  those of each language.
+- **Move** (arrow keys, **Move up**, **Move down**, dragging): the
+  counterparts go along without asking, to the matching place (after the
+  counterpart of the element before it, otherwise to the top), so that the
+  elements stand in the same order in every language. Where that is not
+  possible, for example for a missing permission there, the message says so.
+- **Hide, show**: the same question before the change; the counterparts get
+  the same visibility. **Only here** changes this page only.
+- **Delete**: instead of the browser's question, the editor lists the
+  languages that have the element, each with a box. Where the box is not
+  ticked, the element stays there and is no longer linked with any other
+  element (state **not linked**).
+
+A message at the bottom says what was done in the other languages, or why not
+(for example a missing permission there). Every change goes through Contao's
+permissions and versions as in the back end; deleted elements stay in Contao's
+undo list.
+
+![The question after a new element on the page of the main language: for German and French each "Insert at the same place and translate" (chosen), "Link with an existing element" (for German with the element only German has) and "Do not insert, only in this language".](bilder/sync-new-element.png)
+
+![After a new image on the German page: English (main language) and French ticked, "Replace there too" or "Only on this page".](bilder/sync-image.png)
+
+![Deleting on the page of the main language: German ticked, French not; the note says that the French element stays and is no longer linked.](bilder/sync-delete.png)
+
 ## Take over and link
 
 - **Take over element**: an element missing in the version is copied there and
@@ -314,6 +378,8 @@ be translated on its own.
 
 | What you see | Why | What to do |
 | --- | --- | --- |
+| No question about the other languages after a new element, an image or deleting | The page has no linked language versions, the licence is not Plus, or you lack the switch **Edit language versions (Plus)** | Link the pages (administrator); see [Permissions](../permissions.md). |
+| "… not possible (no permission)" after a question about the other languages | You may not change, move or delete the element in that language, or create one there | Ask your administrator; see [Permissions](../permissions.md). |
 | No **Languages** button | The page has no linked language versions, or you lack the switch | Link the pages (administrator); see [Permissions](../permissions.md). |
 | "Translations need a translation service …" | No translation service is set up or chosen | Administrator: set one up under *Access keys and licences* and choose it in the settings of the editor. |
 | "… refused the translation" (with the name of the service) | Key, region or model wrong, or the characters of the plan used up | Administrator: **Test connection** in the section of the service. |

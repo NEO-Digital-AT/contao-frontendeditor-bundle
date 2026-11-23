@@ -34,6 +34,11 @@
     /* Text on the accent colour (the open tab): as Contao writes on its orange (the counter of a filter),
        white in the light colour scheme and black in the dark one (Contao's --white). */
     --nfe-on-accent: var(--white);
+    /* The main action of a row where the back end draws every button alike (Contao itself): Contao's orange, a shade
+       darker so that white text on it stays readable in both colour schemes (5 : 1; on --contao it would be 2.7 : 1). */
+    --nfe-primary: #b35400;
+    --nfe-primary-hover: #9a4800;
+    --nfe-primary-text: #fff;
 
     /* Contao's own font stack where the back-end theme sets no variable for it (Contao 5.3 to 5.6). */
     font-family: var(--font-family, -apple-system, system-ui, "Segoe UI", "Noto Sans", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif);
@@ -78,18 +83,23 @@
     padding-right: 6px;
 }
 
-/* The main action of a row (Save, Apply, Create …) looks like the back end's own main action, the first button
-   of a form ("Save"): editor.js reads its colours from the back end's stylesheets (--nfe-main-*). Contao itself
-   draws it like every other button; a skin that colours it gets the same colours here. */
+/* The main action of a row (Save, Apply, Replace there too …) stands out. Where a back-end skin colours its own main
+   action, the first button of a form ("Save"), it gets the same colours (editor.js reads them, --nfe-main-*). Contao
+   itself draws every button alike; there the main action takes Contao's orange (--nfe-primary), with white icons. */
 .nfe-button--primary {
-    color: var(--nfe-main-text, inherit);
-    background: var(--nfe-main-bg, var(--form-button));
-    border-color: var(--nfe-main-border, var(--form-border));
+    color: var(--nfe-main-text, var(--nfe-primary-text));
+    background: var(--nfe-main-bg, var(--nfe-primary));
+    border-color: var(--nfe-main-border, var(--nfe-primary));
 }
 
 .nfe-button--primary:not(:disabled):hover {
-    color: var(--nfe-main-text, inherit);
-    background: var(--nfe-main-bg, var(--form-button-hover));
+    color: var(--nfe-main-text, var(--nfe-primary-text));
+    background: var(--nfe-main-bg, var(--nfe-primary-hover));
+    border-color: var(--nfe-main-border, var(--nfe-primary-hover));
+}
+
+:host(:not([data-nfe-main])) .nfe-button--primary:not(:disabled) img {
+    filter: brightness(0) invert(1);
 }
 
 /* Only where a skin colours the main action: a little darker under the pointer, as buttons in its colour do. */
@@ -2313,9 +2323,11 @@
     border-left: 3px solid var(--nfe-error);
 }
 
+/* Like the buttons of a dialog: on the right, the main action at the end; where the row breaks, above. */
 .nfe-versions__actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap-reverse;
+    justify-content: flex-end;
     gap: 8px;
 }
 
@@ -2398,11 +2410,98 @@
     gap: 5px;
 }
 
+/* The main action at the right end; where the row breaks (narrow screens), it goes to the line above. */
 .nfe-dialog__buttons {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap-reverse;
     justify-content: flex-end;
     gap: 8px;
+}
+
+/* ---------------------------------------------------------------- language versions in step (Plus) */
+
+/* The questions after an action on an element the other languages of the page have too: a group per language. */
+.nfe-dialog:has(.nfe-sync) {
+    width: min(540px, 100%);
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+}
+
+.nfe-sync {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nfe-sync__language {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 12px 12px;
+    border: 1px solid var(--nfe-border);
+    border-radius: var(--nfe-radius);
+}
+
+.nfe-sync__language legend {
+    padding: 0 4px;
+    font-weight: 600;
+}
+
+.nfe-sync__option,
+.nfe-sync__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px 8px;
+}
+
+.nfe-sync__row {
+    padding: 8px 12px;
+    border: 1px solid var(--nfe-border);
+    border-radius: var(--nfe-radius);
+}
+
+.nfe-sync__option input,
+.nfe-sync__row input {
+    flex: none;
+    margin: 3px 0 0;
+}
+
+.nfe-sync__option label,
+.nfe-sync__row label {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.nfe-sync__option select {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-left: 22px;
+}
+
+.nfe-sync__summary,
+.nfe-sync__reason,
+.nfe-sync__note {
+    margin: 0;
+    color: var(--nfe-muted);
+    font-size: 0.92em;
+}
+
+.nfe-sync__summary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nfe-sync__option--disabled label,
+.nfe-sync__row--disabled label {
+    color: var(--nfe-muted);
 }
 
 /* ---------------------------------------------------------------- translation window (Plus) */

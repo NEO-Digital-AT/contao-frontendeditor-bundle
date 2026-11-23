@@ -14,7 +14,7 @@ stand: 2026-11-12
 Über der Struktur in der Seitenleiste (Ansicht **Seite**) stehen der Zustand der
 Seite und ihre Aktionen.
 
-![Die Leiste der Seite über der Struktur. 1: der Zustand „Veröffentlicht“. 2: „Zurückziehen“. 3: „Neue Seite“. 4: „Mehr zur Seite“.](bilder/page-bar.png)
+![Die Leiste der Seite über der Struktur. 1: der Zustand „Veröffentlicht“. 2: „Neue Seite“. 3: „Mehr zur Seite“. 4: „Zurückziehen“, rechts außen.](bilder/page-bar.png)
 
 ## Zustand, veröffentlichen, zurückziehen
 

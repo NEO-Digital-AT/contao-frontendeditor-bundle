@@ -49,18 +49,18 @@ the Composer package (`.gitattributes`: `export-ignore`).
   like the services is enough (`GET /models`, `POST /chat/completions` with
   `{"proposals": [...]}` as the message, `POST /translate`); the images show
   what it returns.
-- Node.js with Playwright and its Chromium, and the plugin `neo-doku` of
-  `NEO-Claude-Plugins` (`annotate.js`) next to this repository, or its path
-  in `NFE_ANNOTATE`.
+- Node.js with Playwright and its Chromium, and the annotation layer
+  `annotate.js` of the documentation plugin `neo-doku`, its path in
+  `NFE_ANNOTATE`.
 
 ## Taking the images
 
 ```bash
-NFE_ADMIN_PASSWORD=… NFE_EDITOR_PASSWORD=… node tools/docs-images/capture.cjs en
+NFE_ANNOTATE=…/annotate.js NFE_ADMIN_PASSWORD=… NFE_EDITOR_PASSWORD=… node tools/docs-images/capture.cjs en
 ```
 
 ```bash
-NFE_ADMIN_PASSWORD=… NFE_EDITOR_PASSWORD=… node tools/docs-images/capture.cjs de
+NFE_ANNOTATE=…/annotate.js NFE_ADMIN_PASSWORD=… NFE_EDITOR_PASSWORD=… node tools/docs-images/capture.cjs de
 ```
 
 A second argument takes only some images, e.g. `page-bar,language-versions`.
@@ -89,7 +89,7 @@ in the view; it waits until the page in the frame has the editor's layer.
 | `NFE_ADMIN_USER`, `NFE_ADMIN_PASSWORD` | `admin`, – | Administrator |
 | `NFE_EDITOR_USER`, `NFE_EDITOR_PASSWORD` | `redakteur`, – | Editor (image `missing-permission`) |
 | `NFE_MYSQL` | `mysql contao` | Command for the database of the test installation (MySQL 8 or MariaDB), e.g. `docker exec db mysql -u… -p… contao` |
-| `NFE_ANNOTATE` | `../NEO-Claude-Plugins/plugins/neo-doku/scripts/annotate.js` | Annotation layer |
+| `NFE_ANNOTATE` | – | Path to `annotate.js`, the annotation layer |
 | `NFE_FORM` | `anfrage` | Alias of the sample form |
 
 Check every image after taking it: frames on the right element, nothing cut

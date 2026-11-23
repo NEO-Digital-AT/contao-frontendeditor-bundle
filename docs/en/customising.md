@@ -3,7 +3,7 @@ title: Customising
 summary: Colours, sizes and texts of the editor.
 audience: developers
 language: en
-updated: 2026-11-12
+updated: 2026-11-23
 ---
 
 # Customising
@@ -52,17 +52,21 @@ nfe-editor {
 
 The editor follows the back end's look: without a skin it looks like Contao's
 back end, with a back-end skin it takes over its colours. The main action of a
-row (**Save**, **Apply**, **Create** …) looks like the back end's own main
-action, the first button of a form: Contao draws it like every other button; a
-skin that colours it (for example with a white label on its accent colour) gets
-the same colours in the editor. The open tab of an element (its type, with the
-menu open) is filled with `--nfe-accent` and labelled as Contao labels its
-orange: white in the light colour scheme, black in the dark one (`--white`).
+row (**Save**, **Apply**, **Create** …) stands at its right end, the less
+important buttons before it. Contao draws its own main action (the first button
+of a form) like every other button; the editor draws its main action in
+Contao's orange instead (`--nfe-primary`). A skin that colours the back end's
+main action (for example with a white label on its accent colour) gives the
+editor's main action the same colours (`--nfe-main-*`). The open tab of an
+element (its type, with the menu open) is filled with `--nfe-accent` and
+labelled as Contao labels its orange: white in the light colour scheme, black
+in the dark one (`--white`).
 
 | Variable | What it sets | Default |
 | --- | --- | --- |
 | `--nfe-on-accent` | Text on the accent colour (open tab) | `--white` |
 | `--nfe-main-bg`, `--nfe-main-text`, `--nfe-main-border` | Main action of a row; set by the editor only when the skin colours the back end's main action | the back end's buttons |
+| `--nfe-primary`, `--nfe-primary-hover`, `--nfe-primary-text` | Main action of a row where the back end draws every button alike (Contao without a skin) | `#b35400`, `#9a4800`, `#fff` (Contao's orange, darker for readable white text) |
 
 Check the contrast of your colours (text at least 4.5:1). Contao's own white
 label on its orange reaches about 2.7:1; the editor keeps it so that it looks

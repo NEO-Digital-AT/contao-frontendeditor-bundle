@@ -1,9 +1,9 @@
 ---
 titel: Sprachen
-kurzfassung: Die Sprachversionen einer Seite nebeneinander bearbeiten, maschinelle Übersetzungsvorschläge (Azure Translator, DeepL oder ein KI-Modell), veraltete Übersetzungen.
+kurzfassung: Die Sprachversionen einer Seite nebeneinander bearbeiten und gleich halten, maschinelle Übersetzungsvorschläge (Azure Translator, DeepL oder ein KI-Modell), veraltete Übersetzungen.
 zielgruppe: anwender
 sprache: de
-stand: 2026-11-18
+stand: 2026-11-23
 ---
 
 # Sprachen
@@ -211,6 +211,73 @@ Bei einer veralteten Übersetzung ist **Übersetzungsfenster öffnen** der
 hervorgehobene Knopf. Stimmt die Übersetzung noch, bestätigt **…** › **Als
 aktuell markieren** sie.
 
+## Sprachversionen gleich halten
+
+Gibt es eine Seite in mehreren Sprachen, hält der Editor ihre Elemente gleich:
+Beim Verschieben ziehen die anderen Sprachversionen ohne Rückfrage mit; bei den
+übrigen Änderungen an der Struktur fragt er, ob sie auch dort gelten sollen. Das
+gehört zur Stufe Plus: Ohne Plus-Lizenz für die Website, ohne verknüpfte
+Sprachversionen oder ohne den Schalter **Sprachversionen bearbeiten (Plus)**
+fragt er nicht, und jede Änderung gilt nur für die eigene Seite. Bei einem
+neuen Element fragt er außerdem nur, wenn übersetzt werden kann: mit dem
+Schalter **Übersetzung anfordern (Plus)** und einem eingerichteten
+Übersetzungsdienst. Sonst bleibt das neue Element in seiner Sprache; übernehmen
+lässt es sich später in der Ansicht **Sprachen**. Er fragt nur, wo das Element
+dort ein verknüpftes Gegenstück hat, bei einem neuen Element, wo die Seite
+weitere Sprachen hat. Sprachversionen von vor dem Editor
+ordnet er vorher zu (siehe Ende von *Übernehmen und verknüpfen*); die Frage
+kommt also auch bei Elementen, deren Reiter noch **nicht verknüpft** zeigt.
+
+- **Neues Element** (eingefügt oder dupliziert): Wenn sein Formular gespeichert
+  und geschlossen ist, wählen Sie je Sprache:
+  - **An derselben Stelle einfügen und übersetzen**: Eine Kopie kommt an die
+    passende Stelle (nach dem Gegenstück des Elements davor, sonst ganz oben in
+    den passenden Artikel oder das passende Element), wird mit dem
+    Übersetzungsdienst der Einstellungen übersetzt und als aktuell verknüpft.
+    Elemente darin kommen mit und werden ebenfalls übersetzt. Lehnt der
+    Übersetzungsdienst ab oder antwortet er nicht, wird die Kopie wieder
+    entfernt; die Meldung nennt den Grund.
+  - **Mit einem vorhandenen Element verbinden**: für ein Element, das es dort
+    schon gibt und das zu keinem gehört (etwa eines, das nur diese Sprache
+    hatte); die Liste zeigt solche Elemente des passenden Artikels, gleicher
+    Typ zuerst.
+  - **Nicht einfügen, nur in dieser Sprache**: Das Element bleibt nur in dieser
+    Sprache; sein Reiter zeigt **nicht in allen Sprachen**. Übernehmen lässt es
+    sich später in der Ansicht **Sprachen**.
+
+  **Nur hier** schließt die Frage, ohne in den anderen Sprachen etwas zu tun.
+  Auf der Seite einer Sprachversion steht die Hauptsprache zuerst: Das Element
+  der Hauptsprache wird aus der Sprache der Seite übersetzt, die übrigen
+  Sprachversionen ebenso. Ohne Element in der Hauptsprache lässt sich keine
+  andere Sprachversion verbinden; der Dialog sagt das.
+- **Bild ersetzt** (Kontextmenü, Menü des Elements oder die Bildwerkzeuge beim
+  Bearbeiten): Nach dem Speichern fragt der Editor, ob die Gegenstücke dasselbe
+  Bild bekommen, mit einem Häkchen je Sprache. **Nur auf dieser Seite** lässt
+  die anderen Sprachen, wie sie sind; die Verknüpfung bleibt. Alternativtext
+  und Bildunterschrift bleiben die der jeweiligen Sprache.
+- **Verschieben** (Pfeiltasten, **Nach oben**, **Nach unten**, Ziehen): Die
+  Gegenstücke wandern ohne Rückfrage mit, an die passende Stelle (nach dem
+  Gegenstück des Elements davor, sonst ganz oben), damit die Elemente in jeder
+  Sprache in derselben Reihenfolge stehen. Wo das nicht geht, etwa weil dort
+  die Berechtigung fehlt, sagt es die Meldung.
+- **Ausblenden, Einblenden**: dieselbe Frage vor der Änderung; die Gegenstücke
+  bekommen dieselbe Sichtbarkeit. **Nur hier** ändert nur diese Seite.
+- **Löschen**: Statt der Rückfrage des Browsers zeigt der Editor die Sprachen,
+  in denen es das Element gibt, je mit Häkchen. Wo kein Häkchen gesetzt ist,
+  bleibt das Element stehen und ist danach mit keinem anderen mehr verbunden
+  (Stand **nicht verknüpft**).
+
+Eine Meldung unten sagt, was in den anderen Sprachen geschehen ist, oder warum
+nicht (etwa eine fehlende Berechtigung dort). Jede Änderung läuft über Contaos
+Rechte und Versionen wie im Backend; gelöschte Elemente bleiben in Contaos
+Wiederherstellen-Liste.
+
+![Die Frage nach einem neuen Element auf der Seite der Hauptsprache: für Deutsch und Französisch je „An derselben Stelle einfügen und übersetzen“ (gewählt), „Mit einem vorhandenen Element verbinden“ (für Deutsch mit dem Element, das nur Deutsch hat) und „Nicht einfügen, nur in dieser Sprache“.](bilder/sync-new-element.png)
+
+![Nach einem neuen Bild auf der deutschen Seite: Englisch (Hauptsprache) und Französisch angehakt, „Auch dort ersetzen“ oder „Nur auf dieser Seite“.](bilder/sync-image.png)
+
+![Löschen auf der Seite der Hauptsprache: Deutsch angehakt, Französisch nicht; der Hinweis sagt, dass das französische Element stehen bleibt und nicht mehr verknüpft ist.](bilder/sync-delete.png)
+
 ## Übernehmen und verknüpfen
 
 - **Element übernehmen**: Ein Element, das in der Sprachversion fehlt, wird
@@ -332,6 +399,8 @@ sich übersetzt wird, das Icon **Übersetzen**.
 
 | Anzeichen | Ursache | Lösung |
 | --- | --- | --- |
+| Nach einem neuen Element, einem Bild oder beim Löschen keine Frage nach den anderen Sprachen | Die Seite hat keine verknüpften Sprachversionen, die Lizenz ist nicht Plus, oder Ihnen fehlt der Schalter **Sprachversionen bearbeiten (Plus)** | Die Seiten verknüpfen (Administrator); siehe [Rechte](../permissions.md). |
+| „… nicht möglich (keine Berechtigung)“ nach einer Frage zu den anderen Sprachen | Sie dürfen das Element in dieser Sprache nicht ändern, verschieben oder löschen oder dort keines anlegen | Fragen Sie Ihren Administrator; siehe [Rechte](../permissions.md). |
 | Kein Knopf **Sprachen** | Die Seite hat keine verknüpften Sprachversionen, oder Ihnen fehlt der Schalter | Die Seiten verknüpfen (Administrator); siehe [Rechte](../permissions.md). |
 | „Für Übersetzungen fehlt ein Übersetzungsdienst …“ | Kein Übersetzungsdienst eingerichtet oder gewählt | Administrator: unter *Zugänge und Lizenzen* einen einrichten und in den Einstellungen des Editors wählen. |
 | „… hat die Übersetzung abgelehnt“ (mit dem Namen des Dienstes) | Schlüssel, Region oder Modell falsch, oder die Zeichen des Tarifs sind aufgebraucht | Administrator: **Verbindung prüfen** im Abschnitt des Dienstes. |

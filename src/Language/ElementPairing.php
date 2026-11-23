@@ -43,15 +43,16 @@ final class ElementPairing
      * that contain elements.
      *
      * @param callable(array<string, mixed>): bool $mayLink whether the user may link this element of the version
+     * @param list<int>                            $exclude elements not to pair (a new element: it is asked for)
      *
      * @return int the number of links made
      */
-    public function pair(int $mainPageId, int $targetPageId, string $language, callable $mayLink): int
+    public function pair(int $mainPageId, int $targetPageId, string $language, callable $mayLink, array $exclude = []): int
     {
         $made = 0;
 
         foreach ($this->versions->articleMap($mainPageId, $targetPageId) as $mainArticle => $targetArticle) {
-            $made += $this->pairContainer('tl_article', $mainArticle, $targetArticle, $language, $mayLink);
+            $made += $this->pairContainer('tl_article', $mainArticle, $targetArticle, $language, $mayLink, 0, $exclude);
         }
 
         return $made;
@@ -63,14 +64,16 @@ final class ElementPairing
      * them that contain elements.
      *
      * @param callable(array<string, mixed>): bool $mayLink
+     * @param list<int>                            $exclude elements not to pair
      *
      * @return int the number of links made
      */
-    public function pairContainer(string $ptable, int $mainPid, int $targetPid, string $language, callable $mayLink, int $depth = 0): int
+    public function pairContainer(string $ptable, int $mainPid, int $targetPid, string $language, callable $mayLink, int $depth = 0, array $exclude = []): int
     {
         $made = 0;
-        $main = $this->elements($ptable, $mainPid);
-        $target = $this->elements($ptable, $targetPid);
+        $keep = static fn (array $row): bool => !\in_array((int) $row['id'], $exclude, true);
+        $main = array_values(array_filter($this->elements($ptable, $mainPid), $keep));
+        $target = array_values(array_filter($this->elements($ptable, $targetPid), $keep));
         $targetIds = array_map('intval', array_column($target, 'id'));
 
         if (false === $this->db->fetchOne('SELECT id FROM '.self::TABLE.' WHERE ptable = ? AND main_article = ? AND target_article = ?', [$ptable, $mainPid, $targetPid])) {
@@ -90,7 +93,7 @@ final class ElementPairing
                 $element = (int) $link['element'];
 
                 if (\in_array($element, $targetIds, true) && (isset($containers[$mainId]) || isset($containers[$element]))) {
-                    $made += $this->pairContainer('tl_content', $mainId, $element, $language, $mayLink, $depth + 1);
+                    $made += $this->pairContainer('tl_content', $mainId, $element, $language, $mayLink, $depth + 1, $exclude);
                 }
             }
         }

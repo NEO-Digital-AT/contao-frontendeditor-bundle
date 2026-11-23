@@ -3,7 +3,7 @@ titel: Texte und Bilder bearbeiten
 kurzfassung: Überschriften, Texte, Bilder und Links auf der Seite ändern, das Menü eines Elements, das Kontextmenü, alle Felder eines Elements, speichern und abbrechen.
 zielgruppe: anwender
 sprache: de
-stand: 2026-11-18
+stand: 2026-11-23
 ---
 
 # Texte, Bilder und Links bearbeiten
@@ -154,6 +154,11 @@ unten**, **Element davor einfügen**, **Element danach einfügen**; **Info**
 (Webdesigner); zuletzt **Löschen**. Rechts an einem Eintrag stehen die Tasten,
 die dasselbe am gewählten Element tun: Enter bearbeitet es, Alt+Pfeil nach oben
 oder Alt+Pfeil nach unten verschiebt es, Entf löscht es nach einer Rückfrage.
+Auf einer Seite mit Sprachversionen (Plus) zieht ein verschobenes Element seine
+Gegenstücke in den anderen Sprachen ohne Rückfrage mit; bei einem neuen
+Element, einem ersetzten Bild, beim Ausblenden und Löschen fragt der Editor, ob
+dasselbe auch dort geschehen soll (siehe
+[Sprachversionen gleich halten](languages.md#sprachversionen-gleich-halten)).
 Ein Eintrag, den Ihre Rechte nicht erlauben, steht ausgegraut mit dem Grund da.
 Dieselben Einträge sind der untere Teil des Kontextmenüs (Rechtsklick).
 

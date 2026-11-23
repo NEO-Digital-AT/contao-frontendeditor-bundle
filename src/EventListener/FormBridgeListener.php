@@ -7,12 +7,12 @@ namespace Neo\FrontendEditorBundle\EventListener;
 use Contao\BackendUser;
 use Contao\CoreBundle\Routing\ResponseContext\Csp\CspHandlerFactory;
 use Neo\FrontendEditorBundle\Content\DcaRunner;
+use Neo\FrontendEditorBundle\EditorAssets;
 use Neo\FrontendEditorBundle\Language\RecordVersions;
 use Neo\FrontendEditorBundle\Security\ElementAccess;
 use Neo\FrontendEditorBundle\Security\Permission;
 use Neo\FrontendEditorBundle\SiteOrigins;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Request;
@@ -114,7 +114,7 @@ final class FormBridgeListener
         private readonly ElementAccess $access,
         private readonly TranslatorInterface $translator,
         private readonly Security $security,
-        private readonly Packages $packages,
+        private readonly EditorAssets $assets,
         #[Autowire(service: 'contao.routing.response_context.csp_handler_factory')]
         private readonly CspHandlerFactory $cspHandlerFactory,
         #[Autowire('%contao.backend.route_prefix%')]
@@ -191,7 +191,7 @@ final class FormBridgeListener
         if (null !== $listed) {
             $user = $this->security->getUser();
             $label = $this->translator->trans('editor.rec_translate', [], 'neo_frontend_editor', $user instanceof BackendUser ? (string) $user->language : null);
-            $icons = ['light' => $this->packages->getUrl('bundles/neofrontendeditor/icons/translate.svg'), 'dark' => $this->packages->getUrl('bundles/neofrontendeditor/icons/translate--dark.svg')];
+            $icons = ['light' => $this->assets->url('icons/translate.svg'), 'dark' => $this->assets->url('icons/translate--dark.svg')];
             $bridge .= \sprintf(self::TRANSLATE_LIST, $encodedOrigin, json_encode($listed, JSON_HEX_TAG | JSON_THROW_ON_ERROR), json_encode($label, JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR), json_encode($icons, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
         }
 

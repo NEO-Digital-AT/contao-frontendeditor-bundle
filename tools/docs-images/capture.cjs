@@ -21,7 +21,7 @@ const base = env('NFE_BASE', 'http://127.0.0.1:8000');
 const ADMIN = { user: env('NFE_ADMIN_USER', 'admin'), password: env('NFE_ADMIN_PASSWORD', '') };
 const EDITOR = { user: env('NFE_EDITOR_USER', 'redakteur'), password: env('NFE_EDITOR_PASSWORD', '') };
 const MYSQL = env('NFE_MYSQL', 'mysql contao');
-const ANNOTATE = env('NFE_ANNOTATE', path.resolve(__dirname, '../../../NEO-Claude-Plugins/plugins/neo-doku/scripts/annotate.js'));
+const ANNOTATE = env('NFE_ANNOTATE', '');
 const FORM = env('NFE_FORM', 'anfrage');
 const docs = path.resolve(__dirname, '../../docs', lang) + '/';
 // The editor's own texts in the language of the back-end user, read from the page (see open()).
@@ -325,9 +325,9 @@ const shots = {
   'page-bar': async (s) => {
     await mark(s, `
       neoAnnotate.frame(R.querySelector('.nfe-pagebar .nfe-state'), { number: 1 });
-      neoAnnotate.frame(B(A.withdraw) || B(A.publish), { number: 2 });
-      neoAnnotate.frame(B(A.newPage), { number: 3 });
-      neoAnnotate.frame(B(A.more), { number: 4 });`, { withdraw: t('withdraw'), publish: t('publish'), newPage: t('new_page'), more: t('page_more') });
+      neoAnnotate.frame(B(A.newPage), { number: 2 });
+      neoAnnotate.frame(B(A.more), { number: 3 });
+      neoAnnotate.frame(B(A.withdraw) || B(A.publish), { number: 4 });`, { withdraw: t('withdraw'), publish: t('publish'), newPage: t('new_page'), more: t('page_more') });
     await shot(s, docs + 'usage/bilder/page-bar.png');
   },
   'new-page-tree': async (s) => {
@@ -556,10 +556,10 @@ const shots = {
     await frame.click('#save'); await s.page.waitForTimeout(2500);
     const row = ed(s, '.nfe-versions__row').first();
     await row.locator('input.tl_text').first().fill('Autumn offer'); await row.locator('input.tl_text').nth(1).fill('autumn');
-    await ed(s, '.nfe-versions__actions button').first().focus(); await rest(s);
+    await ed(s, '.nfe-versions__actions .nfe-button--primary').focus(); await rest(s);
     // Numbers at the top right corner of the frames: the left one would cover the first letters.
     await mark(s, `
-      [R.querySelector('.nfe-versions__row legend'), R.querySelector('.nfe-versions__row input[id$="-alias"]'), R.querySelector('.nfe-versions__place'), R.querySelector('.nfe-versions__actions button')].forEach((el, i) => {
+      [R.querySelector('.nfe-versions__row legend'), R.querySelector('.nfe-versions__row input[id$="-alias"]'), R.querySelector('.nfe-versions__place'), R.querySelector('.nfe-versions__actions .nfe-button--primary')].forEach((el, i) => {
         neoAnnotate.frame(el, { padding: 3 });
         const r = el.getBoundingClientRect();
         const at = document.createElement('div');
@@ -617,6 +617,10 @@ function withoutSomeRights(group) {
 (async () => {
   if (!ADMIN.password) {
     console.error('Set NFE_ADMIN_PASSWORD (and NFE_EDITOR_PASSWORD for missing-permission).');
+    process.exit(2);
+  }
+  if (!ANNOTATE || !fs.existsSync(ANNOTATE)) {
+    console.error('Set NFE_ANNOTATE to the path of annotate.js (annotation layer of the plugin neo-doku).');
     process.exit(2);
   }
   const browser = await chromium.launch();

@@ -29,7 +29,11 @@ what each user may do, and every change is saved as a Contao version.
   versions side by side with translation proposals (Azure Translator, DeepL or
   an AI model, marked as machine translation); posts, archives, page settings
   and Contao's front-end modules translated and linked across languages, new
-  posts created in every language at once.
+  posts created in every language at once; the language versions of a page kept
+  in step: a move is carried into the other languages; a new element, a
+  replaced image, hiding and deleting are offered to them (a new element
+  inserted there translated and linked, or linked with an element that is
+  there already).
 - **Pro:** AI writing aid, SEO and accessibility checks, the page in the width
   of a phone or tablet, own CSS or SCSS per page; the modules of the website and
   of other extensions in the sidebar, their records and front-end modules
@@ -131,7 +135,11 @@ wird als Contao-Version gespeichert.
   (Azure Translator, DeepL oder ein KI-Modell, als maschinelle Übersetzung
   gekennzeichnet); Beiträge, Archive, Seiteneinstellungen und Contaos
   Frontend-Module über die Sprachen übersetzt und verknüpft, neue Beiträge
-  gleich in allen Sprachen angelegt.
+  gleich in allen Sprachen angelegt; die Sprachversionen einer Seite bleiben
+  gleich: Verschieben gilt auch in den anderen Sprachen; ein neues Element, ein
+  ersetztes Bild, Ausblenden und Löschen bietet der Editor für sie an (ein
+  neues Element dort übersetzt eingefügt und verknüpft oder mit einem
+  vorhandenen Element verbunden).
 - **Pro:** KI-Schreibhilfe, Prüfung für Suchmaschinen und Barrierefreiheit,
   die Seite in der Breite eines Handys oder Tablets, eigenes CSS oder SCSS je
   Seite; die Module der Website und anderer Erweiterungen in der Seitenleiste,

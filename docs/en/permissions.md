@@ -3,7 +3,7 @@ title: Permissions
 summary: Which switches of the extension and which Contao permissions each function of the editor needs, with ready-made example groups.
 audience: operations
 language: en
-updated: 2026-11-15
+updated: 2026-11-23
 ---
 
 # Permissions
@@ -35,8 +35,8 @@ All Contao permissions below are set in the back end under **User groups**
 | **Create, move and delete elements** | Insert, move, duplicate, hide and delete elements, also elements inside an accordion, slider or element group | Basic |
 | **Create articles** | **Create article** | Basic |
 | **Templates and modules (for web designers)** | **Info** with the templates, frames around modules, form fields and comments with their forms, **Edit layout**, **Templates of the page** | Basic |
-| **Edit language versions (Plus)** | The view **Languages** and the translation window: side by side, translate and save texts, link, take over, mark as current | Plus |
-| **Request translations (Plus)** | **Translate all fields**, **Translate this field** and **Translate whole page** (with the translation service of the settings) | Plus |
+| **Edit language versions (Plus)** | The view **Languages** and the translation window: side by side, translate and save texts, link, take over, mark as current; moving in every language and the question whether a replaced image, hiding, showing and deleting apply to the other languages as well ([Keep the languages in step](usage/languages.md#keep-the-languages-in-step)) | Plus |
+| **Request translations (Plus)** | **Translate all fields**, **Translate this field** and **Translate whole page** (with the translation service of the settings); with **Edit language versions** also inserting a new element into the other languages, translated | Plus |
 | **Create and publish pages (Plus)** | **New page**, **Publish**, **Withdraw**, **Page settings**, **Duplicate page**, **Delete page** | Plus |
 | **Edit posts (Plus)** | The view **Posts** and **Edit post** in lists | Plus |
 | **Open modules (Plus)** | The view **Modules** | Plus |

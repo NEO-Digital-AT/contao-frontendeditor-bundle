@@ -8,6 +8,7 @@ use Contao\Backend;
 use Contao\Config;
 use Contao\PageModel;
 use Neo\FrontendEditorBundle\EditMode;
+use Neo\FrontendEditorBundle\EditorAssets;
 use Neo\FrontendEditorBundle\Settings;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -45,6 +46,15 @@ final class EditorViewListener
         'apply', 'requests_left', 'plus', 'plus_intro', 'plus_languages', 'plus_translate', 'plus_outdated', 'enter_license',
         'changelanguage_missing', 'error.translate_not_configured', 'error.ai_not_configured', 'error.ai_limit_reached',
         'service_azure', 'service_deepl', 'service_ai',
+        // Language versions in step (Plus): the questions after an action on an element (ElementSync)
+        'sync_new_title', 'sync_new_text', 'sync_create', 'sync_link', 'sync_link_choose', 'sync_link_none', 'sync_none',
+        'sync_needs_main', 'sync_no_place', 'sync_apply', 'sync_only_here', 'sync_running', 'sync_running_new',
+        'sync_image_title', 'sync_image_text', 'sync_image_apply', 'sync_image_skip',
+        'sync_hide_title', 'sync_hide_text', 'sync_hide_apply', 'sync_show_title', 'sync_show_text', 'sync_show_apply',
+        'sync_delete_title', 'sync_delete_text', 'sync_delete_note', 'sync_delete_apply',
+        'sync_done_created', 'sync_done_created_open', 'sync_done_linked', 'sync_done_image', 'sync_done_move', 'sync_done_visibility', 'sync_done_delete',
+        'sync_failed', 'sync_reason_forbidden', 'sync_reason_no_container', 'sync_reason_no_main', 'sync_reason_link_invalid', 'sync_reason_no_field',
+        'sync_reason_translate', 'sync_reason_translate_forbidden', 'sync_reason_translate_unavailable', 'sync_reason_translate_incomplete', 'sync_reason_failed',
         // Window "Translate" (Plus)
         'tr_window', 'tr_title', 'tr_into', 'tr_from', 'tr_swap', 'tr_direction', 'tr_propose_all', 'tr_propose', 'tr_element', 'tr_locked_place', 'tr_code_note', 'tr_image_note',
         'tr_nothing', 'tr_not_saved', 'tr_unsaved_text', 'tr_unsaved_proposals', 'tr_main_missing', 'tr_proposed', 'tr_open',
@@ -147,6 +157,7 @@ final class EditorViewListener
         private readonly EditMode $editMode,
         private readonly Settings $settings,
         private readonly Packages $packages,
+        private readonly EditorAssets $assets,
         private readonly TranslatorInterface $translator,
         private readonly Environment $twig,
         #[Autowire('%contao.backend.route_prefix%')]
@@ -186,7 +197,7 @@ final class EditorViewListener
             // Until the page in the frame is there; the editor then shows the page's own title.
             'title' => (string) ($page->pageTitle ?: $page->title),
             'config' => $config,
-            'script' => $this->packages->getUrl('bundles/neofrontendeditor/editor.js'),
+            'script' => $this->assets->url('editor.js'),
         ]));
 
         $response->headers->set('Content-Type', 'text/html; charset=UTF-8');
@@ -224,14 +235,14 @@ final class EditorViewListener
             'page' => $pageId,
             'backend' => $backend,
             'api' => $backend.'/frontend-editor',
-            'styles' => [$backend.'/frontend-editor/backend-styles', $this->packages->getUrl('bundles/neofrontendeditor/editor.css')],
+            'styles' => [$backend.'/frontend-editor/backend-styles', $this->assets->url('editor.css')],
             'cookie' => EditMode::COOKIE,
             'lang' => $locale,
             'texts' => $texts,
             'plurals' => $plurals,
             'icons' => $this->icons(),
             // Accessibility check (Pro): axe-core, loaded into the page only when the check runs.
-            'axe' => $this->packages->getUrl('bundles/neofrontendeditor/axe/axe.min.js'),
+            'axe' => $this->assets->url('axe/axe.min.js'),
             'axeLocale' => $this->axeLocale($locale),
             // Contao's rich text editor for the texts of the page (inline), where it is switched on (System › Settings).
             'tinymce' => Config::get('useRTE') ? $this->packages->getUrl('js/tinymce.min.js', 'contao-components/tinymce4') : null,
@@ -280,9 +291,9 @@ final class EditorViewListener
     private function fallbackIcon(string|null $directory, string $name): array|null
     {
         if (str_starts_with($name, '@')) {
-            $file = 'bundles/neofrontendeditor/icons/'.substr($name, 1);
+            $file = 'icons/'.substr($name, 1);
 
-            return ['light' => $this->packages->getUrl($file.'.svg'), 'dark' => $this->packages->getUrl($file.'--dark.svg')];
+            return ['light' => $this->assets->url($file.'.svg'), 'dark' => $this->assets->url($file.'--dark.svg')];
         }
 
         $light = $this->iconPath($directory, $name.'.svg');
@@ -306,6 +317,6 @@ final class EditorViewListener
     {
         $language = strtolower(substr($locale, 0, 2));
 
-        return is_file(\dirname(__DIR__, 2).'/public/axe/locales/'.$language.'.json') ? $this->packages->getUrl('bundles/neofrontendeditor/axe/locales/'.$language.'.json') : null;
+        return $this->assets->exists('axe/locales/'.$language.'.json') ? $this->assets->url('axe/locales/'.$language.'.json') : null;
     }
 }

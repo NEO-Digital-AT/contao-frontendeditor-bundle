@@ -18,6 +18,7 @@ use Neo\FrontendEditorBundle\Language\Comparison;
 use Neo\FrontendEditorBundle\Language\ElementLinks;
 use Neo\FrontendEditorBundle\Language\ElementPairing;
 use Neo\FrontendEditorBundle\Language\ElementPlaces;
+use Neo\FrontendEditorBundle\Language\ElementSync;
 use Neo\FrontendEditorBundle\Language\ElementTranslator;
 use Neo\FrontendEditorBundle\Language\LanguageVersions;
 use Neo\FrontendEditorBundle\Language\SourceHash;
@@ -60,6 +61,7 @@ final class LanguageController
         private readonly ElementLinks $links,
         private readonly ElementPairing $pairing,
         private readonly ElementPlaces $places,
+        private readonly ElementSync $sync,
         private readonly SourceHash $hashes,
         private readonly ElementTranslator $elementTranslator,
         private readonly TranslationUnits $units,
@@ -628,7 +630,7 @@ final class LanguageController
         } else {
             // A version made before the editor: its elements get their counterparts by structure first.
             if ($pairFirst) {
-                $this->pairFor($element, $mainPage, $elementPage);
+                $this->sync->pairFor($element, $mainPage, $elementPage);
             }
 
             $link = $this->links->ofElement((int) $element['id']);
@@ -652,7 +654,7 @@ final class LanguageController
         // Versions made before the editor: their elements are paired by structure first.
         foreach ([$sourcePage, $targetPage] as $page) {
             if ($pairFirst && $page !== $elementPage) {
-                $this->pairFor($main, $mainPage, $page);
+                $this->sync->pairFor($main, $mainPage, $page);
             }
         }
 
@@ -677,37 +679,6 @@ final class LanguageController
             'from' => (string) PageModel::findWithDetails($sourcePage)?->language,
             'to' => (string) PageModel::findWithDetails($targetPage)?->language,
         ];
-    }
-
-    /**
-     * Pairs the elements of a version made before the editor with those of the
-     * main language, where the element stands: the articles of the page (and
-     * the elements in their elements), or its post (ElementPairing).
-     *
-     * @param array<string, mixed> $element an element of the page in any language
-     */
-    private function pairFor(array $element, int $mainPage, int $page): void
-    {
-        if ($page === $mainPage || !$this->editions->hasPlus($page)) {
-            return;
-        }
-
-        $language = (string) PageModel::findWithDetails($page)?->language;
-        $mayLink = fn (array $row): bool => $this->access->canUpdate($row);
-        $top = $this->places->top($element);
-
-        if ('tl_article' === $top['ptable']) {
-            $this->pairing->pair($mainPage, $page, $language, $mayLink);
-
-            return;
-        }
-
-        $mainPost = $this->places->containerOn($top['ptable'], $top['pid'], $this->places->containerPage($top['ptable'], $top['pid']), $mainPage, $mainPage);
-        $post = null !== $mainPost ? $this->places->postOn($top['ptable'], $mainPost, $page) : null;
-
-        if (null !== $post) {
-            $this->pairing->pairContainer($top['ptable'], $mainPost, $post, $language, $mayLink);
-        }
     }
 
     /**

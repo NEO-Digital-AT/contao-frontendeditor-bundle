@@ -137,8 +137,14 @@
             return;
         }
 
-        if (more.parentNode !== row) {
-            row.append(more, menu);
+        // The main action kept at the end of the row (Save, Apply all) stays its right end: "…" goes before it.
+        const tail = [...row.children].filter((node) => node !== more && node !== menu).pop();
+        const kept = '.nfe-button--primary[data-keep]';
+
+        row.insertBefore(more, tail && (tail.matches(kept) || tail.querySelector(':scope > ' + kept + ':last-child')) ? tail : null);
+
+        if (menu.parentNode !== row) {
+            row.append(menu);
         }
 
         const overflows = () => row.scrollWidth > row.clientWidth + 1;
@@ -475,10 +481,10 @@
     // The veil over the page while it loads again; it goes once the editor is attached to the new page (at most 20 s).
     let veilTimer = 0;
 
-    function showVeil(shown) {
+    function showVeil(shown, message = null) {
         window.clearTimeout(veilTimer);
         veil.hidden = !shown;
-        veil.firstElementChild.replaceChildren(...(shown ? [h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text: t('busy_page') })] : []));
+        veil.firstElementChild.replaceChildren(...(shown ? [h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }), h('span', { text: message || t('busy_page') })] : []));
         pageFrame.toggleAttribute('aria-busy', shown);
 
         if (shown) {
@@ -2485,7 +2491,9 @@
     }
 
     async function setImage(id, image, value) {
-        await saveFields(id, { [image.field]: value });
+        if (await saveFields(id, { [image.field]: value })) {
+            await offerImage(id, image.field);
+        }
     }
 
     // Alternative text or caption of the element's image, in a dialog; saved at once.
@@ -2553,8 +2561,12 @@
             await refreshElement(id);
             announce(t('saved'));
             afterChange();
+
+            return true;
         } catch (error) {
             showToast(error.status ? error.message : t('save_failed'));
+
+            return false;
         }
     }
 
@@ -3820,6 +3832,8 @@
 
     // A dialog over the view: the focus goes into it and stays there (Tab), Esc closes it like its last button, the
     // focus goes back where it was. Resolves with the value of the button pressed (a function: its result).
+    // The buttons are given by importance; the main one (primary) stands at the right end of the row, the others
+    // before it in their order, and it has the focus.
     function openDialog({ title, text = '', body = null, buttons }) {
         return new Promise((resolve) => {
             const before = root.activeElement || document.activeElement;
@@ -3830,7 +3844,9 @@
                 before?.focus?.();
                 resolve(typeof entry.value === 'function' ? entry.value() : entry.value);
             };
-            const nodes = buttons.map((entry) => button(entry.label, { className: entry.primary ? 'nfe-button--primary' : '', onclick: () => done(entry) }));
+            const ordered = [...buttons.filter((entry) => !entry.primary), ...buttons.filter((entry) => entry.primary)];
+            const nodes = ordered.map((entry) => button(entry.label, { className: entry.primary ? 'nfe-button--primary' : '', onclick: () => done(entry) }));
+            const main = nodes[ordered.findIndex((entry) => entry.primary)] || nodes[0];
             const box = h('div', { class: 'nfe-dialog', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id + '-title', 'aria-describedby': text ? id + '-text' : null }, [
                 h('h2', { class: 'nfe-dialog__title', id: id + '-title', text: title }),
                 text ? h('p', { class: 'nfe-dialog__text', id: id + '-text', text }) : null,
@@ -3859,7 +3875,7 @@
                 }
             });
             root.append(overlay);
-            (body?.querySelector('input, textarea') || nodes[0]).focus();
+            (body?.querySelector('input, textarea') || main).focus();
         });
     }
 
@@ -4288,6 +4304,11 @@
         // The Save buttons show that it runs, also after Ctrl+S (no click) and while the page loads again.
         holdAction('save', 1);
 
+        // Images of elements chosen while editing: offered to the other languages once saved (offerImage).
+        const images = batches.filter((batch) => typeof batch.part === 'number').flatMap((batch) => (elementData(batch.part)?.images || [])
+            .filter((image) => Object.hasOwn(batch.values.own?.fields || {}, image.field))
+            .map((image) => ({ id: batch.part, field: image.field })));
+
         try {
             const refresh = { elements: new Set(), items: new Set() };
 
@@ -4330,8 +4351,14 @@
             state.error = true;
             renderStatus();
             showToast(error.status ? error.message : t('save_failed'), error.status ? null : save);
+
+            return;
         } finally {
             holdAction('save', -1);
+        }
+
+        for (const image of images) {
+            await offerImage(image.id, image.field);
         }
     }
 
@@ -4704,7 +4731,7 @@
             target = index > 1 ? { after: list[index - 2].id } : topOf(article);
         }
 
-        structureCall('/element/' + id + '/move', target, { select: id, focus, announce: t(direction < 0 ? 'move_up' : 'move_down') });
+        moveCall(id, target, { select: id, focus, announce: t(direction < 0 ? 'move_up' : 'move_down') });
     }
 
     // Moves before or after another element (drag and drop), in the same or another article of the page.
@@ -4723,7 +4750,7 @@
         const unchanged = article === articleOf(id) && (target.after ? current[currentIndex - 1]?.id === target.after : currentIndex === 0);
 
         if (!unchanged) {
-            structureCall('/element/' + id + '/move', target, { select: id, focus, announce: t('move') });
+            moveCall(id, target, { select: id, focus, announce: t('move') });
         }
     }
 
@@ -4735,30 +4762,79 @@
             return;
         }
 
-        structureCall('/element/' + id + '/move', last ? { after: last.id } : topOf(article), { select: id, focus, announce: t('move') });
+        moveCall(id, last ? { after: last.id } : topOf(article), { select: id, focus, announce: t('move') });
     }
 
-    function duplicate(id, focus) {
-        structureCall('/element/' + id + '/copy', {}, { focus, announce: t('duplicate') });
-    }
+    // A copy is a new element: on a page with language versions it is offered to the other languages (offerNewElement).
+    async function duplicate(id, focus) {
+        if (!hasVersions()) {
+            structureCall('/element/' + id + '/copy', {}, { focus, announce: t('duplicate') });
 
-    function toggleHidden(id, focus) {
-        // The focus comes back to the switch, which tells its state itself.
-        structureCall('/element/' + id + '/toggle', {}, { select: id, focus });
-    }
-
-    // Deleting asks first, with Contao's own question; the element stays in Contao's undo list.
-    function remove(id) {
-        if (!window.confirm((config.texts.deleteConfirm || '%s').replace('%s', String(id)))) {
             return;
         }
 
+        const result = await structureCall('/element/' + id + '/copy', {}, null);
+
+        if (result) {
+            const toast = await offerNewElement(result.id);
+
+            reloadPage({ select: result.id, focus, announce: t('duplicate'), toast });
+        }
+    }
+
+    // Hidden or shown, also in the languages chosen (askFollow).
+    async function toggleHidden(id, focus) {
+        const pages = await askFollow(id, elementData(id)?.invisible ? 'show' : 'hide');
+
+        if (pages === null) {
+            return;
+        }
+
+        // The focus comes back to the switch, which tells its state itself.
+        if (!pages.length) {
+            structureCall('/element/' + id + '/toggle', {}, { select: id, focus });
+
+            return;
+        }
+
+        if (await structureCall('/element/' + id + '/toggle', {}, null)) {
+            showVeil(true, t('sync_running'));
+            reloadPage({ select: id, focus, toast: await syncCall(id, 'visibility', { pages }) });
+        }
+    }
+
+    // Deleting asks first, with Contao's own question; the element stays in Contao's undo list. An element with
+    // counterparts in other languages asks which of them go too; those that stay lose their link with it.
+    async function remove(id) {
         const article = articleOf(id);
         const list = article ? article.elements : [];
         const index = list.findIndex((element) => element.id === id);
         const next = list[index + 1] || list[index - 1] || null;
+        const restore = { select: next ? next.id : null, focus: { where: 'tree' }, announce: t('delete') };
+        const data = hasVersions() && !state.busy && (await settle()) ? await versionsOf(id) : null;
 
-        structureCall('/element/' + id + '/delete', {}, { select: next ? next.id : null, focus: { where: 'tree' }, announce: t('delete') });
+        if (data?.languages.some((language) => language.element)) {
+            const pages = await askLanguages({ title: t('sync_delete_title'), text: t('sync_delete_text'), note: t('sync_delete_note'), apply: t('sync_delete_apply') }, data, (element) => element.canDelete);
+
+            if (pages === null) {
+                return;
+            }
+
+            if (pages.length) {
+                showVeil(true, t('sync_running'));
+                restore.toast = await syncCall(id, 'delete', { pages });
+            }
+
+            structureCall('/element/' + id + '/delete', {}, restore);
+
+            return;
+        }
+
+        if (!window.confirm((config.texts.deleteConfirm || '%s').replace('%s', String(id)))) {
+            return;
+        }
+
+        structureCall('/element/' + id + '/delete', {}, restore);
     }
 
     // A new element is a draft until Contao's form is saved: its form opens in the sidebar.
@@ -5033,7 +5109,7 @@
                 const group = groupById(target.article);
 
                 if (sameContainer(group, articleOf(id))) {
-                    structureCall('/element/' + id + '/move', topOf(group), { select: id, focus, announce: t('move') });
+                    moveCall(id, topOf(group), { select: id, focus, announce: t('move') });
                 }
             } else if (target.article) {
                 moveInto(id, target.article, focus);
@@ -5171,6 +5247,298 @@
         }
 
         return items;
+    }
+
+    // ------------------------------------------------------------------ language versions in step (Plus)
+
+    // On a page with language versions, what is done to an element is offered for its counterparts in the other
+    // languages as well (ElementSync): a new element is inserted there too (translated and linked) or linked with an
+    // element there; its image, its place and its visibility follow; deleting it deletes them. Each time a dialog asks,
+    // per language; what is not chosen stays as it is (a deleted element's counterparts lose their link).
+
+    // What the element has in the other languages of the page; null without versions, rights or an answer. Always
+    // asked of the server on a page with versions: versions made before the editor are paired there first, so an
+    // element the page still shows as "not linked" may have its counterparts once asked.
+    async function versionsOf(id, isNew = false) {
+        if (!hasVersions()) {
+            return null;
+        }
+
+        try {
+            const data = await api('/element/' + id + '/versions' + (isNew ? '?new=1' : ''));
+
+            return data.languages?.length ? data : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    const languageName = (page) => (editions().languages || []).find((version) => version.id === page)?.name || String(page);
+    const listOf = (names) => (window.Intl?.ListFormat ? new Intl.ListFormat(config.lang || undefined, { type: 'conjunction' }).format(names) : names.join(', '));
+
+    // Which languages an action also goes to: a check box per language whose counterpart the action applies to
+    // (checked), disabled with the reason where the user may not. The pages chosen, [] for "only here", null when
+    // cancelled.
+    function askLanguages({ title, text, note = null, apply, skip = null, cancel = true }, data, may) {
+        const rows = data.languages.filter((language) => language.element).map((language) => {
+            const reason = !language.plus || !may(language.element) ? t('sync_reason_forbidden') : null;
+            const id = 'nfe-sync-' + language.page;
+            const input = h('input', { type: 'checkbox', id, value: String(language.page), checked: !reason, disabled: Boolean(reason) });
+
+            return h('div', { class: 'nfe-sync__row' + (reason ? ' nfe-sync__row--disabled' : '') }, [
+                input,
+                h('label', { for: id }, [
+                    h('strong', { text: language.main ? t('main_language', { language: language.name }) : language.name }),
+                    h('span', { class: 'nfe-sync__summary', text: language.element.typeLabel + (language.element.summary ? ': ' + language.element.summary : '') }),
+                    reason ? h('span', { class: 'nfe-sync__reason', text: reason }) : null,
+                ]),
+            ]);
+        });
+
+        if (!rows.length) {
+            return Promise.resolve([]);
+        }
+
+        const chosen = () => rows.map((row) => row.querySelector('input')).filter((input) => input.checked && !input.disabled).map((input) => Number(input.value));
+        const buttons = [{ label: apply, value: chosen, primary: true }];
+
+        if (skip) {
+            buttons.push({ label: skip, value: () => [] });
+        }
+
+        if (cancel) {
+            buttons.push({ label: t('unsaved_cancel'), value: null });
+        }
+
+        return openDialog({ title, text, body: h('div', { class: 'nfe-sync' }, [...rows, note ? h('p', { class: 'nfe-sync__note', text: note }) : null]), buttons });
+    }
+
+    // Runs an action of ElementSync and says what came of it (a toast: done, or why not).
+    async function syncCall(id, action, body) {
+        try {
+            const data = await api('/element/' + id + '/versions/' + action, { method: 'POST', body: JSON.stringify(body) });
+
+            return syncNote(data.results || [], action);
+        } catch (error) {
+            return { message: error.status ? error.message : t('save_failed'), kind: 'error' };
+        }
+    }
+
+    function syncReason(reason) {
+        const key = 'sync_reason_' + (reason || 'failed');
+
+        if (config.texts[key]) {
+            return t(key);
+        }
+
+        return t(String(reason).startsWith('translate_') ? 'sync_reason_translate' : 'sync_reason_failed');
+    }
+
+    function syncNote(results, action) {
+        const lines = [];
+        const done = [];
+        let failed = false;
+
+        for (const result of results) {
+            const language = languageName(result.page);
+
+            if (result.done === 'created') {
+                lines.push(result.translated ? t('sync_done_created', { language }) : t('sync_done_created_open', { language, reason: syncReason(result.reason) }));
+                failed = failed || !result.translated;
+            } else if (result.done === 'linked') {
+                lines.push(t('sync_done_linked', { language }));
+            } else if (result.done === 'done') {
+                done.push(language);
+            } else if (result.reason && !['no_element', 'exists'].includes(result.reason)) {
+                lines.push(t('sync_failed', { language, reason: syncReason(result.reason) }));
+                failed = true;
+            }
+        }
+
+        if (done.length) {
+            lines.unshift(t('sync_done_' + action, { languages: listOf(done) }));
+        }
+
+        return lines.length ? { message: lines.join(' '), kind: failed ? 'error' : 'ok' } : null;
+    }
+
+    // A new element (inserted or duplicated) on a page with language versions: per other language insert it there
+    // too, at the same place, translated and linked; link it with an element that is there already; or leave it in
+    // this language only. An element of a version reaches the other versions through the main language: without an
+    // element there, they cannot be chosen. Asked only with translations at hand (Plus, the switch "Request
+    // translations", a translation service set up). The note on what was done, null when nothing was asked or done.
+    async function offerNewElement(id) {
+        const data = await versionsOf(id, true);
+
+        if (!data?.translate) {
+            return null;
+        }
+
+        const onMain = data.page === data.mainPage;
+        const mainName = data.languages.find((language) => language.main)?.name || '';
+        const groups = data.languages.map((language) => {
+            const name = 'nfe-sync-' + language.page;
+            const createReason = !language.plus
+                ? t('sync_reason_forbidden')
+                : (!language.container ? t('sync_no_place', { language: language.name }) : (!language.canCreate ? t('sync_reason_forbidden') : null));
+            const linkReason = !language.plus ? t('sync_reason_forbidden') : (!language.candidates.length ? t('sync_link_none') : null);
+            const select = h('select', { class: 'tl_select', id: name + '-element', 'aria-label': t('sync_link_choose', { language: language.name }), disabled: true },
+                language.candidates.map((candidate) => h('option', { value: String(candidate.id), text: candidate.typeLabel + (candidate.summary ? ': ' + candidate.summary : '') })));
+            const option = (value, label, reason, extra = null) => {
+                const input = h('input', { type: 'radio', name, id: name + '-' + value, value, disabled: Boolean(reason) });
+
+                return h('div', { class: 'nfe-sync__option' + (reason ? ' nfe-sync__option--disabled' : '') }, [
+                    input,
+                    h('label', { for: name + '-' + value }, [h('span', { text: label }), reason ? h('span', { class: 'nfe-sync__reason', text: reason }) : null]),
+                    extra,
+                ]);
+            };
+            const create = option('create', t('sync_create'), createReason);
+            const link = option('link', t('sync_link'), linkReason, language.candidates.length ? select : null);
+            const none = option('none', t('sync_none'), null);
+            const fieldset = h('fieldset', { class: 'nfe-sync__language', 'data-page': String(language.page) }, [
+                h('legend', { text: language.main ? t('main_language', { language: language.name }) : language.name }),
+                create,
+                link,
+                none,
+                !onMain && !language.main ? h('p', { class: 'nfe-sync__reason nfe-sync__needs', hidden: true, text: t('sync_needs_main', { language: mainName }) }) : null,
+            ]);
+
+            (createReason ? none : create).querySelector('input').checked = true;
+            fieldset.addEventListener('change', () => {
+                select.disabled = !link.querySelector('input').checked;
+                follow();
+            });
+
+            return { language, fieldset, select };
+        });
+
+        // On a page of a version: the other versions only through an element of the main language.
+        const follow = () => {
+            if (onMain) {
+                return;
+            }
+
+            const main = groups.find((group) => group.language.main);
+            const without = !main || main.fieldset.querySelector('input[value="none"]').checked;
+
+            for (const group of groups.filter((entry) => !entry.language.main)) {
+                for (const input of group.fieldset.querySelectorAll('input[value="create"], input[value="link"]')) {
+                    const own = input.value === 'create' ? !group.language.plus || !group.language.container || !group.language.canCreate : !group.language.plus || !group.language.candidates.length;
+
+                    input.disabled = without || own;
+                }
+
+                if (without) {
+                    group.fieldset.querySelector('input[value="none"]').checked = true;
+                    group.select.disabled = true;
+                }
+
+                group.fieldset.querySelector('.nfe-sync__needs').hidden = !without;
+            }
+        };
+
+        follow();
+
+        const answer = await openDialog({
+            title: t('sync_new_title'),
+            text: t('sync_new_text'),
+            body: h('div', { class: 'nfe-sync' }, groups.map((group) => group.fieldset)),
+            buttons: [
+                {
+                    label: t('sync_apply'),
+                    primary: true,
+                    value: () => {
+                        const choices = {};
+                        const link = {};
+
+                        for (const group of groups) {
+                            const value = group.fieldset.querySelector('input:checked')?.value || 'none';
+
+                            choices[group.language.page] = value;
+
+                            if (value === 'link') {
+                                link[group.language.page] = Number(group.select.value);
+                            }
+                        }
+
+                        return { choices, link };
+                    },
+                },
+                { label: t('sync_only_here'), value: null },
+            ],
+        });
+
+        if (!answer || !Object.values(answer.choices).some((choice) => choice !== 'none')) {
+            return null;
+        }
+
+        showVeil(true, t('sync_running_new'));
+
+        return syncCall(id, 'create', answer);
+    }
+
+    // After the element's image was changed: the same image in its counterparts, where the user agrees.
+    async function offerImage(id, field) {
+        if (!hasVersions()) {
+            return;
+        }
+
+        const data = await versionsOf(id);
+        const has = data?.languages.filter((language) => language.element) || [];
+
+        if (!has.length) {
+            return;
+        }
+
+        const pages = await askLanguages({ title: t('sync_image_title'), text: t('sync_image_text'), apply: t('sync_image_apply'), skip: t('sync_image_skip'), cancel: false }, data, (element) => element.canUpdate);
+
+        if (!pages?.length) {
+            return;
+        }
+
+        const note = await syncCall(id, 'image', { field, pages });
+
+        if (note) {
+            showToast(note.message, null, note.kind);
+        }
+    }
+
+    // Before hiding or showing: which languages it also goes to. [] without counterparts (nothing asked), null when
+    // cancelled.
+    async function askFollow(id, kind) {
+        if (!hasVersions()) {
+            return [];
+        }
+
+        const data = await versionsOf(id);
+
+        if (!data?.languages.some((language) => language.element)) {
+            return [];
+        }
+
+        return askLanguages({ title: t('sync_' + kind + '_title'), text: t('sync_' + kind + '_text'), apply: t('sync_' + kind + '_apply'), skip: t('sync_only_here') }, data, (element) => element.canToggle);
+    }
+
+    // A move moves the counterparts in the other languages along, without asking: the elements stand in the same order
+    // in every language. Their counterparts are looked up before the move (versions made before the editor are paired
+    // while the order is still the same), then go to the matching place; the note says where, or why not.
+    async function moveCall(id, target, restore) {
+        const data = hasVersions() ? await versionsOf(id) : null;
+        const pages = (data?.languages || []).filter((language) => language.element).map((language) => language.page);
+
+        if (!pages.length) {
+            return structureCall('/element/' + id + '/move', target, restore);
+        }
+
+        const result = await structureCall('/element/' + id + '/move', target, null);
+
+        if (result) {
+            showVeil(true, t('sync_running'));
+            reloadPage({ select: id, ...restore, toast: await syncCall(id, 'move', { pages }) });
+        }
+
+        return result;
     }
 
     // ------------------------------------------------------------------ translation window (Plus)
@@ -5728,9 +6096,9 @@
         const message = tr.busy ? tr.message || t('loading') : tr.message;
         const status = h('div', { class: 'nfe-tr__status' + (tr.busy ? ' nfe-loading' : ''), role: 'status', tabindex: '-1' }, message ? [tr.busy ? h('span', { class: 'nfe-spinner', 'aria-hidden': 'true' }) : null, h('span', { text: message })] : []);
         // Nothing can be saved without the element in the version or the permission; the notice above says why.
-        const save = target.id && target.canUpdate ? button(t('save'), { icon: 'save', className: machine && !translationDirty() ? '' : 'nfe-button--primary', action: 'tr-save', onclick: saveTranslation }) : null;
+        const save = target.id && target.canUpdate ? button(t('save'), { icon: 'save', className: machine && !translationDirty() ? '' : 'nfe-button--primary', action: 'tr-save', onclick: () => saveTranslation() }) : null;
 
-        box.append(body, h('div', { class: 'nfe-tr__foot' }, [status, h('div', { class: 'nfe-dialog__buttons' }, [save, button(t('cancel'), { action: 'tr-cancel', onclick: () => closeTranslation() })])]));
+        box.append(body, h('div', { class: 'nfe-tr__foot' }, [status, h('div', { class: 'nfe-dialog__buttons' }, [button(t('cancel'), { action: 'tr-cancel', onclick: () => closeTranslation() }), save])]));
         tr.overlay.replaceChildren(box);
 
         // Every "Translate this field" button as high and wide as a one-line field of the back-end theme.
@@ -6130,13 +6498,18 @@
             translateButton.disabled = true;
         }
 
-        // The buttons in one row of their own (fitRow): what does not fit is behind "…"; "Apply all" stays.
+        // The buttons in one row of their own (fitRow): what does not fit is behind "…"; the main action stays, at the
+        // right end of the row.
         applyAll?.setAttribute('data-keep', '');
 
+        if (translateButton?.classList.contains('nfe-button--primary')) {
+            translateButton.setAttribute('data-keep', '');
+        }
+
         const actions = [
-            translateButton,
             // The page's own texts: its title, the title and description for search engines.
             lang?.target ? button(t('rec_page_meta'), { icon: 'translate', onclick: () => openRecordTranslation('tl_page', main?.id || config.page, lang.target) }) : null,
+            translateButton,
             applyAll,
         ].filter(Boolean);
         const actionRow = actions.length ? h('div', { class: 'nfe-lang-bar__actions', 'data-fit': '' }, actions) : null;
@@ -6273,10 +6646,11 @@
         actions.replaceChildren();
 
         if (proposal) {
+            // By importance from left to right: the main action at the right end.
             actions.append(
-                button(t('apply_save'), { icon: 'save', className: 'nfe-button--primary', onclick: () => saveRow(element.id) }),
-                button(t('tr_review'), { icon: 'edit', onclick: () => openTranslation(row.main.id, lang.target, proposal.values) }),
                 button(t('discard'), { icon: 'close', iconOnly: true, onclick: () => { lang.proposals.delete(element.id); renderLanguages(); } }),
+                button(t('tr_review'), { icon: 'edit', onclick: () => openTranslation(row.main.id, lang.target, proposal.values) }),
+                button(t('apply_save'), { icon: 'save', className: 'nfe-button--primary', onclick: () => saveRow(element.id) }),
             );
             titleActions(actions);
 
@@ -6290,12 +6664,12 @@
             element.canUpdate && row.link ? { label: t('unlink'), icon: 'link', action: () => rowCall('/link/' + row.link + '/delete', {}) } : null,
         ].filter(Boolean);
 
-        if (row.main) {
-            actions.append(button(t('tr_window'), { icon: 'translate', className: outdated ? 'nfe-button--primary' : '', onclick: () => openTranslation(row.main.id, lang.target) }));
-        }
-
         if (more.length) {
             actions.append(button(t('more'), { icon: 'more', iconOnly: true, onclick: (event) => openMenu(event.currentTarget, more, t('more')) }));
+        }
+
+        if (row.main) {
+            actions.append(button(t('tr_window'), { icon: 'translate', className: outdated ? 'nfe-button--primary' : '', onclick: () => openTranslation(row.main.id, lang.target) }));
         }
 
         titleActions(actions);
@@ -6308,12 +6682,12 @@
         const actions = h('div', { class: 'nfe-card__actions nfe-actions' });
         const parentMissing = row.depth && !row.targetParent;
 
-        if ((state.structure?.permissions.editStructure) && row.targetParent) {
-            actions.append(button(t('adopt'), { icon: 'copy', className: 'nfe-button--primary', onclick: () => adopt(row.main.id) }));
-        }
-
         if (candidates.length) {
             actions.append(button(t('link_element'), { icon: 'link', onclick: (event) => openMenu(event.currentTarget, candidates.map((other) => ({ label: other.target.typeLabel + ': ' + other.target.summary, action: () => rowCall('/link', { main: row.main.id, element: other.target.id }) })), t('link_element')) }));
+        }
+
+        if ((state.structure?.permissions.editStructure) && row.targetParent) {
+            actions.append(button(t('adopt'), { icon: 'copy', className: 'nfe-button--primary', onclick: () => adopt(row.main.id) }));
         }
 
         titleActions(actions);
@@ -6335,12 +6709,12 @@
         const missingParent = row.depth ? 'parent_missing' : (group.kind === 'post' ? 'post_missing' : 'article_missing');
         const reason = !row.mainParent ? t(missingParent, { language: data.main.name }) : (row.canAdoptMain ? null : t('adopt_main_denied', { language: data.main.name }));
 
-        if (!reason) {
-            actions.append(button(t('adopt_main', { language: data.main.name }), { icon: 'copy', className: 'nfe-button--primary', onclick: () => adoptIntoMain(row.target.id) }));
-        }
-
         if (candidates.length && row.target.canUpdate) {
             actions.append(button(t('link_element'), { icon: 'link', onclick: (event) => openMenu(event.currentTarget, candidates.map((other) => ({ label: other.main.typeLabel + ': ' + other.main.summary, action: () => rowCall('/link', { main: other.main.id, element: row.target.id }) })), t('link_element')) }));
+        }
+
+        if (!reason) {
+            actions.append(button(t('adopt_main', { language: data.main.name }), { icon: 'copy', className: 'nfe-button--primary', onclick: () => adoptIntoMain(row.target.id) }));
         }
 
         titleActions(actions);
@@ -6823,10 +7197,11 @@
 
         return h('div', { class: 'nfe-pagebar' }, [
             ed.pages ? h('div', { class: 'nfe-statusline' }, [stateChip(status, page.start), styleChip(page)]) : null,
+            // Publish (or withdraw) keeps its place at the right end, the main action of a page not published.
             actionRow([
-                page.canPublish ? button(page.published ? t('withdraw') : t('publish'), { icon: page.published ? 'hide' : 'visible', className: page.published ? '' : 'nfe-button--primary', onclick: togglePage }) : null,
-                page.canCreate ? button(t('new_page'), { icon: 'new', onclick: openNewPage }) : null,
+                page.canCreate ? button(t('new_page'), { icon: 'new', onclick: () => openNewPage() }) : null,
                 more.length ? button(t('page_more'), { icon: 'more', iconOnly: true, onclick: (event) => openMenu(event.currentTarget, more, t('page_more')) }) : null,
+                page.canPublish ? button(page.published ? t('withdraw') : t('publish'), { icon: page.published ? 'hide' : 'visible', className: page.published ? '' : 'nfe-button--primary', onclick: togglePage }) : null,
             ]),
         ]);
     }
@@ -7099,7 +7474,7 @@
                 panel.querySelector('.nfe-panel__body input:not([disabled]), .nfe-panel__body select')?.focus();
             } }) : null;
 
-            body.append(h('div', { class: 'nfe-versions__actions' }, [button(t('lv_finish'), { icon: 'ok', className: 'nfe-button--primary', onclick: finishLanguageVersions }), retry]));
+            body.append(h('div', { class: 'nfe-versions__actions' }, [retry, button(t('lv_finish'), { icon: 'ok', className: 'nfe-button--primary', onclick: finishLanguageVersions })]));
 
             return;
         }
@@ -7179,7 +7554,7 @@
         body.append(
             ...rows.map((row) => row.node),
             h('p', { class: 'nfe-versions__hint', text: t('lv_note') }),
-            h('div', { class: 'nfe-versions__actions' }, [create, required ? null : button(t('lv_skip'), { onclick: finishLanguageVersions })]),
+            h('div', { class: 'nfe-versions__actions' }, [required ? null : button(t('lv_skip'), { onclick: finishLanguageVersions }), create]),
         );
     }
 
@@ -9581,7 +9956,10 @@
 
         if (form?.isNew) {
             if (form.saved && ['tl_content', 'tl_article'].includes(form.table)) {
-                reloadPage({ select: form.table === 'tl_content' ? form.id : null, focus: { where: 'tree' } });
+                // A new element with its content: offered to the other languages of the page.
+                const toast = form.table === 'tl_content' && hasVersions() ? await offerNewElement(form.id) : null;
+
+                reloadPage({ select: form.table === 'tl_content' ? form.id : null, focus: { where: 'tree' }, toast });
 
                 return;
             }
@@ -9838,7 +10216,7 @@
 
     // CSS variables a website sets on nfe-editor in its layout (customising.md) reach the editor's area in the
     // page; the view, which has no style sheet of the website, takes over the values that differ from its own.
-    const VARIABLES = ['--nfe-accent', '--nfe-surface', '--nfe-border', '--nfe-text', '--nfe-muted', '--nfe-error', '--nfe-hover', '--nfe-selected', '--nfe-selected-border', '--nfe-radius', '--nfe-frame-width', '--nfe-panel-width', '--nfe-form-width'];
+    const VARIABLES = ['--nfe-accent', '--nfe-primary', '--nfe-primary-hover', '--nfe-primary-text', '--nfe-surface', '--nfe-border', '--nfe-text', '--nfe-muted', '--nfe-error', '--nfe-hover', '--nfe-selected', '--nfe-selected-border', '--nfe-radius', '--nfe-frame-width', '--nfe-panel-width', '--nfe-form-width'];
 
     function adoptVariables() {
         if (!pageHost) {
@@ -9923,6 +10301,11 @@
 
             if (restore.announce) {
                 announce(restore.announce);
+            }
+
+            // What an action in the other languages came to (ElementSync).
+            if (restore.toast) {
+                showToast(restore.toast.message, null, restore.toast.kind);
             }
         }, 450);
     }

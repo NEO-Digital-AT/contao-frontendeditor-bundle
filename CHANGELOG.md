@@ -4,6 +4,26 @@ All notable changes to this extension are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-11-23
+
+### Added
+- **Language versions kept in step (Plus).** On a page with language versions, a move is carried into the other languages, and what else is done to an element is offered to its counterparts there, in a dialog per action (`ElementSync`, endpoints `…/element/{id}/versions` and `…/versions/{create,image,move,visibility,delete}`):
+  - a new element (inserted, once its form is saved and closed, or duplicated): per language **Insert at the same place and translate** (a copy after the counterpart of the element before it, translated by the translation service of the settings, linked as current, with the elements in it), **Link with an existing element** (an element there that belongs to none yet, those of the same type first) or **Do not insert, only in this language**; **Only here** for none. On the page of a version the main language comes first; the other versions follow through its element. Asked only with translations at hand (the switch *Request translations* and a translation service set up); a copy whose translation the service refuses or cannot answer is removed again;
+  - a replaced image (context menu, the element's menu, the image tools while editing): the same file in the counterparts that are ticked; alternative text and caption stay those of each language;
+  - move (arrow keys, menu, dragging): the counterparts go to the matching place without asking, so the elements stand in the same order in every language;
+  - hide and show: the counterparts get the same visibility;
+  - delete: the counterparts that are ticked are deleted as well; the others stay and lose their link (state *not linked*). This dialog replaces the browser's question where the element has counterparts.
+
+  A message says per language what was done or why not. Nothing of this without Plus for the website, linked language versions and the switch *Edit language versions*: the editor does not ask, the endpoints answer 403, every action applies to its own page as before. Every write goes through Contao's operations, voters and versions (`StructureEditor`, `FieldWriter`) and needs Plus for the page of the language and, except for the image, the switch *Create, move and delete elements*. Versions made before the editor are paired first, so the question also comes for elements still shown as *not linked*; a new element is left out of that pairing (`ElementPairing::pair()` and `pairContainer()` take a list of elements to leave out). New texts `editor.sync_*` in the eleven languages.
+
+### Changed
+- The main action of a dialog or window (**Replace there too**, **Apply**, **Delete**, **Translate all fields**, **Save** …) stands out in Contao's orange where the back end draws every button alike (Contao without a skin): a shade darker than Contao's `--contao`, so that its white text stays readable in both colour schemes (5 : 1), with white icons; disabled it stays grey. A skin that colours the back end's main action keeps giving it its colours. New variables `--nfe-primary`, `--nfe-primary-hover`, `--nfe-primary-text`.
+- The main action stands at the right end of its row of buttons, the less important ones before it: in every dialog (**Cancel**, **Replace there too**), in the window Translate (**Cancel**, **Save**), on the cards of the view Languages (**Link with an element**, **Take over**), in the bar of a page (**Publish**) and of the view Languages; a dialog without fields opens with the focus on it. Where a row is too narrow, its "…" goes before the main action, which stays.
+
+### Fixed
+- **New page** in the bar of a page: the sidebar is titled **New page** again instead of "[object PointerEvent]".
+- Before Contao 5.7, the addresses of the editor's script, stylesheet, icons and accessibility check carry a version (a short hash of the file), so that after an update the browser loads the new files instead of keeping those of the old version. Contao 5.7 versions them itself; its version stays.
+
 ## [1.0.1] - 2026-11-18
 
 ### Fixed
